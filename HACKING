@@ -1,0 +1,2 @@
+Run this awesome whatnot with:
+  PYTHONPATH=$PWD/src bin/mw
