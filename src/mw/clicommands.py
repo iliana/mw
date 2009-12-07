@@ -38,6 +38,7 @@ class CommandBase(object):
                                   dest='use_auth', help='force authentication '
                                   'even if not required')
         self.parser.add_option_group(global_options)
+        self.shortcuts = []
 
     def main(self):
         (self.options, self.args) = self.parser.parse_args()
@@ -75,6 +76,7 @@ class FetchCommand(CommandBase):
     def __init__(self):
         usage = '%prog fetch [options] PAGENAME ...'
         CommandBase.__init__(self, 'fetch', 'fetch remote pages', usage)
+        self.shortcuts.append('ft')
 
     def _do_command(self):
         self._die_if_no_init()

@@ -26,6 +26,7 @@ class CLI(object):
     def __init__(self):
         self.me = os.path.basename(sys.argv[0])
         self.commands = {}
+        self.shortcuts = {}
         for name in mw.clicommands.__dict__:
             if name == 'CommandBase':
                 continue
@@ -34,13 +35,18 @@ class CLI(object):
                issubclass(clazz, mw.clicommands.CommandBase):
                 cmd = clazz()
                 self.commands[cmd.name] = cmd
+                self.shortcuts[cmd.name] = cmd.shortcuts
 
     def usage(self):
         print 'usage: %s [subcommand]' % self.me
         print
         for name in self.commands:
             cmd = self.commands[name]
-            print("\t%-14s %-25s" % (name, cmd.description))
+            if len(cmd.shortcuts) > 0:
+                full = name + ' (' + ' '.join(cmd.shortcuts) + ')'
+            else:
+                full = name
+            print("\t%-14s %-25s" % (full, cmd.description))
         print
         sys.exit(1)
 
