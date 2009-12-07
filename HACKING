@@ -1,2 +1,6 @@
 Run this awesome whatnot with:
   PYTHONPATH=$PWD/src bin/mw
+
+Changing how something already works in the .mw metadir requires a damn
+good reason and we don't want to introduce incompatibilities at all in
+the tree. On the other hand, patches are greatly welcomed!
