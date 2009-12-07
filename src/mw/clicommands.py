@@ -97,7 +97,8 @@ class FetchCommand(CommandBase):
                                            response[pageid]['title'],
                                            revid)
                 self.metadir.add_rv_info(response[pageid]['revisions'][0])
-                fd = file(os.path.join(self.metadir.root, \
-                        response[pageid]['title'].replace(' ', '_') + \
-                        '.wiki'), 'w')
+                filename = response[pageid]['title'].replace(' ', '_')
+                filename = filename.replace('/', '!')
+                fd = file(os.path.join(self.metadir.root, filename + '.wiki'),
+                          'w')
                 fd.write(response[pageid]['revisions'][0]['*'].encode('utf-8'))
