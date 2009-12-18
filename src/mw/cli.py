@@ -36,6 +36,10 @@ class CLI(object):
                 cmd = clazz()
                 self.commands[cmd.name] = cmd
                 self.shortcuts[cmd.name] = cmd.shortcuts
+        self.all_commands = self.commands
+        for command in self.shortcuts:
+            for shortcut in self.shortcuts[command]:
+                self.all_commands[shortcut] = self.commands[command]
 
     def usage(self):
         print 'usage: %s [subcommand]' % self.me
@@ -53,7 +57,7 @@ class CLI(object):
     def main(self):
         # determine what the subcommand is
         if len(sys.argv) > 1:
-            if sys.argv[1] in self.commands.keys():
+            if sys.argv[1] in self.all_commands:
                 the_command = sys.argv[1] # SWEET ACTION
             elif sys.argv[1] in ['--help', '-h']:
                 self.usage()
