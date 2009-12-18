@@ -69,4 +69,4 @@ class CLI(object):
         if len(sys.argv) == 1:
             self.usage()
         # woo let's go
-        self.commands[the_command].main()
+        self.all_commands[the_command].main()
