@@ -21,6 +21,7 @@ import inspect
 import mw.clicommands
 import os
 import sys
+from pprint import pprint
 
 class CLI(object):
     def __init__(self):
@@ -36,7 +37,8 @@ class CLI(object):
                 cmd = clazz()
                 self.commands[cmd.name] = cmd
                 self.shortcuts[cmd.name] = cmd.shortcuts
-        self.all_commands = self.commands
+        self.all_commands = {}
+        self.all_commands.update(self.commands)
         for command in self.shortcuts:
             for shortcut in self.shortcuts[command]:
                 self.all_commands[shortcut] = self.commands[command]
