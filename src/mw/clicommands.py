@@ -92,6 +92,10 @@ class FetchCommand(CommandBase):
             }
             response = self.api.call(data)['query']['pages']
             for pageid in response.keys():
+                if 'missing' in response[pageid].keys():
+                    print '%s: %s: page does not exist, file not created' % \
+                            (self.me, response[pageid]['title'])
+                    continue
                 revid = [x['revid'] for x in response[pageid]['revisions']]
                 self.metadir.add_page_info(int(pageid),
                                            response[pageid]['title'],
