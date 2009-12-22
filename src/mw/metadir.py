@@ -82,11 +82,13 @@ class Metadir(object):
     def pages_add_rev(self, pageid, rv):
         pagefile = os.path.join(self.location, 'cache', 'pages', str(pageid))
         fd = file(pagefile, 'w+')
-        pagedata = json.loads(fd.read())
+        pagedata_raw = fd.read()
+        if pagedata_raw == '':
+            pagedata = {}
+        else:
+            pagedata = json.loads(pagedata_raw)
         rvid = int(rv['revid'])
-        if pageid not in pagedata.keys():
-            pagedata[pageid] = {}
-        pagedata[pageid][rvid] = {
+        pagedata[rvid] = {
                 'user': rv['user'], 'timestamp': rv['timestamp'],
                 'content': rv['*'],
         }
