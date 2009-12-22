@@ -107,7 +107,8 @@ class Metadir(object):
         fd.close()
 
     def pages_get_rv_list(self, pageid):
-        pagefile = os.path.join(self.location, 'cache', 'pages', str(pageid))
+        pagefile = os.path.join(self.location, 'cache', 'pages',
+                                str(pageid['id']))
         fd = file(pagefile, 'r')
         pagedata = json.loads(fd.read())
         rvs = [int(x) for x in pagedata.keys()]
@@ -115,7 +116,8 @@ class Metadir(object):
         return rvs
 
     def pages_get_rv(self, pageid, rvid):
-        pagefile = os.path.join(self.location, 'cache', 'pages', str(pageid))
+        pagefile = os.path.join(self.location, 'cache', 'pages',
+                                str(pageid['id']))
         fd = file(pagefile, 'r')
         pagedata = json.loads(fd.read())
         return pagedata[str(rvid)]
