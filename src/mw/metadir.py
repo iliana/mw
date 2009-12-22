@@ -54,6 +54,7 @@ class Metadir(object):
         # metadir versioning
         fd = file(os.path.join(self.location, 'version'))
         fd.write('1')
+        fd.close()
         # create config
         self.config = ConfigParser.RawConfigParser()
         self.config.add_section('remote')
@@ -65,6 +66,7 @@ class Metadir(object):
         # create cache/pagedict
         fd = file(os.path.join(self.location, 'cache', 'pagedict'), 'w')
         fd.write(json.dumps({}))
+        fd.close()
         # create cache/pages/
         os.mkdir(os.path.join(self.location, 'cache', 'pages'), 0755)
 
@@ -75,6 +77,7 @@ class Metadir(object):
         fd.seek(0)
         fd.write(json.dumps(pagedict))
         fd.truncate()
+        fd.close()
 
     def pages_add_rev(self, pageid, rv):
         pagefile = os.path.join(self.location, 'cache', 'pages', str(pageid))
@@ -90,3 +93,4 @@ class Metadir(object):
         fd.seek(0)
         fd.write(json.dumps(pagedata))
         fd.truncate()
+        fd.close()
