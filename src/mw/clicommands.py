@@ -96,10 +96,10 @@ class FetchCommand(CommandBase):
                             (self.me, response[pageid]['title'])
                     continue
                 revid = [x['revid'] for x in response[pageid]['revisions']]
-                self.metadir.add_page_info(int(pageid),
-                                           response[pageid]['title'],
-                                           revid)
-                self.metadir.add_rv_info(response[pageid]['revisions'][0])
+                self.metadir.pagedict_add(response[pageid]['title'],
+                                          int(pageid))
+                self.metadir.pages_add_rev(int(pageid),
+                                           response[pageid]['revisions'][0])
                 filename = response[pageid]['title'].replace(' ', '_')
                 filename = filename.replace('/', '!')
                 fd = file(os.path.join(self.metadir.root, filename + '.wiki'),
