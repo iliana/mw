@@ -46,11 +46,11 @@ class Metadir(object):
 
     def create(self, api_url):
         # create the directory
-        try:
-            os.mkdir(self.location, 0755)
-        except OSError, e:
+        if os.path.isdir(self.location):
             print '%s: you are already in a mw repo' % self.me
             sys.exit(1)
+        else:
+            os.mkdir(self.location, 0755)
         # create config
         self.config = ConfigParser.RawConfigParser()
         self.config.add_section('remote')
