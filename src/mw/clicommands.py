@@ -91,17 +91,16 @@ class FetchCommand(CommandBase):
             }
             response = self.api.call(data)['query']['pages']
             for pageid in response.keys():
+                pagename = response[pageid]['title']
                 if 'missing' in response[pageid].keys():
                     print '%s: %s: page does not exist, file not created' % \
-                            (self.me, response[pageid]['title'])
+                            (self.me, pagename)
                     continue
                 revid = [x['revid'] for x in response[pageid]['revisions']]
-                self.metadir.pagedict_add(response[pageid]['title'],
-                                          int(pageid))
+                self.metadir.pagedict_add(pagename, int(pageid))
                 self.metadir.pages_add_rev(int(pageid),
                                            response[pageid]['revisions'][0])
-                filename = response[pageid]['title'].replace(' ', '_')
-                filename = filename.replace('/', '!')
+                filename = mw.api.pagename_to_filename(pagename)
                 fd = file(os.path.join(self.metadir.root, filename + '.wiki'),
                           'w')
                 fd.write(response[pageid]['revisions'][0]['*'].encode('utf-8'))
