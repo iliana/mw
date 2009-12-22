@@ -79,7 +79,7 @@ class Metadir(object):
         fd.truncate()
         fd.close()
 
-    def pages_add_rev(self, pageid, rv):
+    def pages_add_rv(self, pageid, rv):
         pagefile = os.path.join(self.location, 'cache', 'pages', str(pageid))
         fd = file(pagefile, 'w+')
         pagedata_raw = fd.read()

@@ -98,8 +98,8 @@ class FetchCommand(CommandBase):
                     continue
                 revid = [x['revid'] for x in response[pageid]['revisions']]
                 self.metadir.pagedict_add(pagename, int(pageid))
-                self.metadir.pages_add_rev(int(pageid),
-                                           response[pageid]['revisions'][0])
+                self.metadir.pages_add_rv(int(pageid),
+                                          response[pageid]['revisions'][0])
                 filename = mw.api.pagename_to_filename(pagename)
                 fd = file(os.path.join(self.metadir.root, filename + '.wiki'),
                           'w')
