@@ -24,7 +24,9 @@ from optparse import OptionParser, OptionGroup
 import os
 import sys
 
+
 class CommandBase(object):
+
     def __init__(self, name, description, usage=None):
         self.me = os.path.basename(sys.argv[0])
         self.description = description
@@ -44,6 +46,9 @@ class CommandBase(object):
         (self.options, self.args) = self.parser.parse_args()
         self.args = self.args[1:] # don't need the first thing
         self._do_command()
+
+    def _do_command(self):
+        pass
 
     def _login(self):
         user = raw_input('Username: ')
@@ -65,6 +70,7 @@ class CommandBase(object):
 
 
 class InitCommand(CommandBase):
+
     def __init__(self):
         usage = '%prog init API_URL'
         CommandBase.__init__(self, 'init', 'start a mw repo', usage)
@@ -78,6 +84,7 @@ class InitCommand(CommandBase):
 
 
 class PullCommand(CommandBase):
+
     def __init__(self):
         usage = '%prog fetch [options] PAGENAME ...'
         CommandBase.__init__(self, 'pull', 'add remote pages to repo', usage)
@@ -87,7 +94,7 @@ class PullCommand(CommandBase):
         self._api_setup()
         pages = []
         pages += self.args
-        for these_pages in [pages[i:i+25] for i in range(0, len(pages), 25)]:
+        for these_pages in [pages[i:i + 25] for i in range(0, len(pages), 25)]:
             data = {
                     'action': 'query',
                     'titles': '|'.join(these_pages),
@@ -113,6 +120,7 @@ class PullCommand(CommandBase):
 
 
 class StatusCommand(CommandBase):
+
     def __init__(self):
         CommandBase.__init__(self, 'status', 'check repo status')
         self.shortcuts.append('st')

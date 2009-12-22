@@ -16,13 +16,13 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 ###
 
-import inspect
 import mw.clicommands
 import os
 import sys
-from pprint import pprint
+
 
 class CLI(object):
+
     def __init__(self):
         self.me = os.path.basename(sys.argv[0])
         self.commands = {}

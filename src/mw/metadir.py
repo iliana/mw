@@ -20,9 +20,10 @@ import ConfigParser
 import json
 import os
 import sys
-import time
+
 
 class Metadir(object):
+
     def __init__(self):
         self.me = os.path.basename(sys.argv[0])
         root = os.getcwd()
@@ -30,7 +31,7 @@ class Metadir(object):
             if '.mw' in os.listdir(root):
                 self.root = root
                 break
-            (head, tail) = os.path.split(root)
+            head = os.path.split(root)[0]
             if head == root:
                 self.root = os.getcwd()
                 break

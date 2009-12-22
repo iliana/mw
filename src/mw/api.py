@@ -23,7 +23,9 @@ from StringIO import StringIO
 import urllib
 import urllib2
 
+
 class API(object):
+
     def __init__(self, api_url):
         self.api_url = api_url
         self.cookiejar = cookielib.CookieJar()
@@ -61,6 +63,7 @@ def pagename_to_filename(name):
     name = name.replace(' ', '_')
     name = name.replace('/', '!')
     return name
+
 
 def filename_to_pagename(name):
     name = name.replace('!', '/')
