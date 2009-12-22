@@ -58,11 +58,11 @@ class API(object):
 
 
 def pagename_to_filename(name):
-    name.replace(' ', '_')
-    name.replace('/', '!')
+    name = name.replace(' ', '_')
+    name = name.replace('/', '!')
     return name
 
 def filename_to_pagename(name):
-    name.replace('!', '/')
-    name.replace('_', ' ')
+    name = name.replace('!', '/')
+    name = name.replace('_', ' ')
     return name
