@@ -96,8 +96,9 @@ class PullCommand(CommandBase):
                     print '%s: %s: page does not exist, file not created' % \
                             (self.me, pagename)
                     continue
-                revid = [x['revid'] for x in response[pageid]['revisions']]
-                self.metadir.pagedict_add(pagename, int(pageid))
+                revids = [x['revid'] for x in response[pageid]['revisions']]
+                revids.sort()
+                self.metadir.pagedict_add(pagename, pageid, revids[-1])
                 self.metadir.pages_add_rv(int(pageid),
                                           response[pageid]['revisions'][0])
                 filename = mw.api.pagename_to_filename(pagename)

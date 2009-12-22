@@ -70,10 +70,10 @@ class Metadir(object):
         # create cache/pages/
         os.mkdir(os.path.join(self.location, 'cache', 'pages'), 0755)
 
-    def pagedict_add(self, pagename, pageid):
+    def pagedict_add(self, pagename, pageid, currentrv):
         fd = file(os.path.join(self.location, 'cache', 'pagedict'), 'r+')
         pagedict = json.loads(fd.read())
-        pagedict[pagename] = int(pageid)
+        pagedict[pagename] = {'id': int(pageid), 'currentrv': int(currentrv)}
         fd.seek(0)
         fd.write(json.dumps(pagedict))
         fd.truncate()
