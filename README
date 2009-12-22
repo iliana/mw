@@ -1,10 +1,15 @@
 mw - VCS-like nonsense for MediaWiki websites
 Copyright (C) 2009  Ian Weller <ian@ianweller.org>
 
-For now, see HACKING for how to run this. This is far from complete and
-we're hoping to have awesome features soon. If you would like to help
-out, patches are greatly welcomed.
+== Basic workflow ==
+mw init http://path.to/api.php
+mw pull 'Main Page'
+$EDITOR Main_Page.wiki
+mw fetch # check for newer revisions
+mw update # apply newer revisions
+mw commit
 
+== License ==
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
