@@ -72,11 +72,10 @@ class InitCommand(CommandBase):
         self.metadir.create(self.args[0])
 
 
-class FetchCommand(CommandBase):
+class PullCommand(CommandBase):
     def __init__(self):
         usage = '%prog fetch [options] PAGENAME ...'
-        CommandBase.__init__(self, 'fetch', 'fetch remote pages', usage)
-        self.shortcuts.append('ft')
+        CommandBase.__init__(self, 'pull', 'add remote pages to repo', usage)
 
     def _do_command(self):
         self._die_if_no_init()
