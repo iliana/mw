@@ -16,6 +16,7 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 ###
 
+import codecs
 import getpass
 import mw.api
 import mw.metadir
@@ -104,3 +105,32 @@ class FetchCommand(CommandBase):
                 fd = file(os.path.join(self.metadir.root, filename + '.wiki'),
                           'w')
                 fd.write(response[pageid]['revisions'][0]['*'].encode('utf-8'))
+
+
+class StatusCommand(CommandBase):
+    def __init__(self):
+        CommandBase.__init__(self, 'status', 'check repo status')
+        self.shortcuts.append('st')
+
+    def _do_command(self):
+        self._die_if_no_init()
+        check = []
+        for root, dirs, files in os.walk(self.metadir.root):
+            if root == self.metadir.root:
+                dirs.remove('.mw')
+            for name in files:
+                check.append(os.path.join(root, name))
+        check.sort()
+        for full in check:
+            name = os.path.split(full)[1]
+            if name[-5:] == '.wiki':
+                pagename = mw.api.filename_to_pagename(name[:-5])
+                pageid = self.metadir.get_pageid_from_pagename(pagename)
+                if not pageid:
+                    print '? %s' % os.path.relpath(full, self.metadir.root)
+                else:
+                    rvid = self.metadir.pages_get_rv_list(pageid)[-1]
+                    rv = self.metadir.pages_get_rv(pageid, rvid)
+                    cur_content = codecs.open(full, 'r', 'utf-8').read()
+                    if cur_content != rv['content']:
+                        print 'U %s' % os.path.relpath(full, self.metadir.root)

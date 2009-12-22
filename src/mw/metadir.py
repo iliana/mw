@@ -79,6 +79,14 @@ class Metadir(object):
         fd.truncate()
         fd.close()
 
+    def get_pageid_from_pagename(self, pagename):
+        fd = file(os.path.join(self.location, 'cache', 'pagedict'), 'r')
+        pagedict = json.loads(fd.read())
+        if pagename in pagedict.keys():
+            return pagedict[pagename]
+        else:
+            return None
+
     def pages_add_rv(self, pageid, rv):
         pagefile = os.path.join(self.location, 'cache', 'pages', str(pageid))
         fd = file(pagefile, 'w+')
@@ -96,3 +104,17 @@ class Metadir(object):
         fd.write(json.dumps(pagedata))
         fd.truncate()
         fd.close()
+
+    def pages_get_rv_list(self, pageid):
+        pagefile = os.path.join(self.location, 'cache', 'pages', str(pageid))
+        fd = file(pagefile, 'r')
+        pagedata = json.loads(fd.read())
+        rvs = [int(x) for x in pagedata.keys()]
+        rvs.sort()
+        return rvs
+
+    def pages_get_rv(self, pageid, rvid):
+        pagefile = os.path.join(self.location, 'cache', 'pages', str(pageid))
+        fd = file(pagefile, 'r')
+        pagedata = json.loads(fd.read())
+        return pagedata[str(rvid)]
