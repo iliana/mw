@@ -52,7 +52,7 @@ class Metadir(object):
         else:
             os.mkdir(self.location, 0755)
         # metadir versioning
-        fd = file(os.path.join(self.location, 'version'))
+        fd = file(os.path.join(self.location, 'version'), 'w')
         fd.write('1')
         fd.close()
         # create config
