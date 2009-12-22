@@ -57,34 +57,33 @@ class Metadir(object):
         self.config.set('remote', 'api_url', api_url)
         with open(self.config_loc, 'wb') as config_file:
             self.config.write(config_file)
-        # create cache
+        # create cache/
         os.mkdir(os.path.join(self.location, 'cache'))
-        # create cache/page
-        fd = file(os.path.join(self.location, 'cache', 'page'), 'w')
+        # create cache/pagedict
+        fd = file(os.path.join(self.location, 'cache', 'pagedict'), 'w')
         fd.write(json.dumps({}))
-        # create cache/rv
-        fd = file(os.path.join(self.location, 'cache', 'rv'), 'w')
-        fd.write(json.dumps({}))
+        # create cache/pages/
+        os.mkdir(os.path.join(self.location, 'cache', 'pages'), 0755)
 
-    def add_page_info(self, pageid, pagename, rvids):
-        lulz = file(os.path.join(self.location, 'cache', 'page'), 'r')
-        conf = json.loads(lulz.read())
-        conf[pageid] = {'name': pagename, 'rv': rvids}
-        fd = file(os.path.join(self.location, 'cache', 'page'), 'w')
-        fd.write(json.dumps(conf))
+    def pagedict_add(self, pagename, pageid):
+        fd = file(os.path.join(self.location, 'cache', 'pagedict'), 'r+')
+        pagedict = json.loads(fd.read())
+        pagedict[pagename] = int(pageid)
+        fd.seek(0)
+        fd.write(json.dumps(pagedict))
+        fd.truncate()
 
-    def add_rv_info(self, rv):
-        lulz = file(os.path.join(self.location, 'cache', 'rv'), 'r')
-        conf = json.loads(lulz.read())
+    def pages_add_rev(self, pageid, rv):
+        pagefile = os.path.join(self.location, 'cache', 'pages', str(pageid))
+        fd = file(pagefile, 'w+')
+        pagedata = json.loads(fd.read())
         rvid = int(rv['revid'])
-        conf[rvid] = {
+        if pageid not in pagedata.keys():
+            pagedata[pageid] = {}
+        pagedata[pageid][rvid] = {
                 'user': rv['user'], 'timestamp': rv['timestamp'],
-                'content': rv['*']
+                'content': rv['*'],
         }
-        conf[rvid]['minor'] = 'minor' in rv
-        if 'comment' in rv:
-            conf[rvid]['comment'] = rv['comment']
-        else:
-            conf[rvid]['comment'] = None
-        fd = file(os.path.join(self.location, 'cache', 'rv'), 'w')
-        fd.write(json.dumps(conf))
+        fd.seek(0)
+        fd.write(json.dumps(pagedata))
+        fd.truncate()
