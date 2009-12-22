@@ -51,6 +51,9 @@ class Metadir(object):
             sys.exit(1)
         else:
             os.mkdir(self.location, 0755)
+        # metadir versioning
+        fd = file(os.path.join(self.location, 'version'))
+        fd.write('1')
         # create config
         self.config = ConfigParser.RawConfigParser()
         self.config.add_section('remote')
