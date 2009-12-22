@@ -48,6 +48,11 @@ class CommandBase(object):
     def _login(self):
         user = raw_input('Username: ')
         passwd = getpass.getpass()
+        result = self.api.call({'action': 'login',
+                                'lgname': user,
+                                'lgpassword': passwd})
+        if result['login']['result'] != 'Success':
+            raise Exception('Login error: %s' % result['login']['result'])
 
     def _die_if_no_init(self):
         if self.metadir.config is None:
