@@ -98,9 +98,10 @@ class Metadir(object):
             pagedata = json.loads(pagedata_raw)
         rvid = int(rv['revid'])
         pagedata[rvid] = {
-                'user': rv['user'], 'timestamp': rv['timestamp'],
-                'content': rv['*'],
+                'user': rv['user'], 'timestamp': rv['timestamp']
         }
+        if '*' in rv.keys():
+            pagedata[rvid]['content'] = rv['*']
         fd.seek(0)
         fd.write(json.dumps(pagedata))
         fd.truncate()
