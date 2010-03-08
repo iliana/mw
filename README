@@ -1,5 +1,5 @@
 mw - VCS-like nonsense for MediaWiki websites
-Copyright (C) 2009  Ian Weller <ian@ianweller.org>
+Copyright (C) 2010  Ian Weller <ian@ianweller.org>
 
 == Basic workflow ==
 See HACKING on how to run this; a nice setup.py isn't done yet.
