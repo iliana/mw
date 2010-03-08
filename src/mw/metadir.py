@@ -16,8 +16,10 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 ###
 
+import codecs
 import ConfigParser
 import json
+import mw.api
 import os
 import sys
 
@@ -122,3 +124,27 @@ class Metadir(object):
         fd = file(pagefile, 'r')
         pagedata = json.loads(fd.read())
         return pagedata[str(rvid)]
+
+    def working_dir_status(self):
+        status = {}
+        check = []
+        for root, dirs, files in os.walk(self.root):
+            if root == self.root:
+                dirs.remove('.mw')
+            for name in files:
+                check.append(os.path.join(root, name))
+        check.sort()
+        for full in check:
+            name = os.path.split(full)[1]
+            if name[-5:] == '.wiki':
+                pagename = mw.api.filename_to_pagename(name[:-5])
+                pageid = self.get_pageid_from_pagename(pagename)
+                if not pageid:
+                    status[os.path.relpath(full, self.root)] = '?'
+                else:
+                    rvid = self.pages_get_rv_list(pageid)[-1]
+                    rv = self.pages_get_rv(pageid, rvid)
+                    cur_content = codecs.open(full, 'r', 'utf-8').read()
+                    if cur_content != rv['content']:
+                        status[os.path.relpath(full, self.root)] = 'U'
+        return status
