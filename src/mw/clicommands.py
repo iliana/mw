@@ -138,3 +138,9 @@ class DiffCommand(CommandBase):
 
     def _do_command(self):
         self._die_if_no_init()
+        status = self.metadir.working_dir_status()
+        for file in status:
+            if status[file] == 'U':
+                print self.metadir.diff_rv_to_working(
+                    mw.api.filename_to_pagename(file[:-5])
+                )

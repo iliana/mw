@@ -16,11 +16,13 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 ###
 
+import bzrlib.diff
 import codecs
 import ConfigParser
 import json
 import mw.api
 import os
+from StringIO import StringIO
 import sys
 
 
@@ -148,3 +150,29 @@ class Metadir(object):
                     if cur_content != rv['content']:
                         status[os.path.relpath(full, self.root)] = 'U'
         return status
+
+    def diff_rv_to_working(self, pagename, oldrvid=0, newrvid=0):
+        # oldrvid=0 means latest fetched revision
+        # newrvid=0 means working copy
+        filename = mw.api.pagename_to_filename(pagename) + '.wiki'
+        pageid = self.get_pageid_from_pagename(pagename)
+        if not pageid:
+            raise ValueError('page named %s has not been fetched' % pagename)
+        else:
+            if oldrvid == 0:
+                oldrvid = self.pages_get_rv_list(pageid)[-1]
+            oldrv = self.pages_get_rv(pageid, oldrvid)
+            oldname = 'a/%s (revision %i)' % (filename, oldrvid)
+            old = [i+'\n' for i in oldrv['content'].split('\n')]
+            if newrvid == 0:
+                cur_content = codecs.open(filename, 'r', 'utf-8').read()
+                newname = 'b/%s (working copy)' % filename
+                new = [i+'\n' for i in cur_content.split('\n')]
+            else:
+                newrv = self.pages_get_rv(pageid, newrvid)
+                newname = 'b/%s (revision %i)' % (filename, newrvid)
+                new = [i+'\n' for i in newrv['content'].split('\n')]
+            diff_fd = StringIO()
+            bzrlib.diff.internal_diff(oldname, old, newname, new, diff_fd)
+            diff_fd.seek(0)
+            return diff_fd.read()
