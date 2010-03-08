@@ -129,3 +129,12 @@ class StatusCommand(CommandBase):
         status = self.metadir.working_dir_status()
         for file in status:
             print '%s %s' % (status[file], file)
+
+
+class DiffCommand(CommandBase):
+
+    def __init__(self):
+        CommandBase.__init__(self, 'diff', 'diff wiki to working directory')
+
+    def _do_command(self):
+        self._die_if_no_init()
