@@ -143,4 +143,4 @@ class DiffCommand(CommandBase):
             if status[file] == 'U':
                 print self.metadir.diff_rv_to_working(
                     mw.api.filename_to_pagename(file[:-5])
-                )
+                ),
