@@ -60,7 +60,7 @@ class CLI(object):
         if len(sys.argv) > 1:
             if sys.argv[1] in self.all_commands:
                 the_command = sys.argv[1] # SWEET ACTION
-            elif sys.argv[1] in ['--help', '-h']:
+            elif sys.argv[1] in ['--help', '-h', 'help']:
                 self.usage()
             else:
                 print '%s: invalid subcommand: %s' % (self.me, sys.argv[1])
