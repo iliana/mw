@@ -31,6 +31,8 @@ class CommandBase(object):
         self.description = description
         if usage is None:
             usage = '%prog ' + name
+        else:
+            usage = '%%prog %s %s' % (name, usage)
         self.parser = OptionParser(usage=usage, description=description)
         self.name = name
         self.metadir = mw.metadir.Metadir()
@@ -71,7 +73,7 @@ class CommandBase(object):
 class InitCommand(CommandBase):
 
     def __init__(self):
-        usage = '%prog init API_URL'
+        usage = 'API_URL'
         CommandBase.__init__(self, 'init', 'start a mw repo', usage)
 
     def _do_command(self):
@@ -85,7 +87,7 @@ class InitCommand(CommandBase):
 class PullCommand(CommandBase):
 
     def __init__(self):
-        usage = '%prog fetch [options] PAGENAME ...'
+        usage = '[options] PAGENAME ...'
         CommandBase.__init__(self, 'pull', 'add remote pages to repo', usage)
 
     def _do_command(self):
