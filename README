@@ -4,7 +4,7 @@ Copyright (C) 2009  Ian Weller <ian@ianweller.org>
 == Basic workflow ==
 See HACKING on how to run this; a nice setup.py isn't done yet.
 
-mw init http://path.to/api.php
+mw init http://example.com/w/api.php
 mw pull 'Main Page'
 $EDITOR Main_Page.wiki
 mw fetch # check for newer revisions
