@@ -45,7 +45,9 @@ class CLI(object):
     def usage(self):
         print 'usage: %s [subcommand]' % self.me
         print
-        for name in self.commands:
+        commands = self.commands.keys()
+        commands.sort()
+        for name in commands:
             cmd = self.commands[name]
             if len(cmd.shortcuts) > 0:
                 full = name + ' (' + ' '.join(cmd.shortcuts) + ')'
