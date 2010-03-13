@@ -36,11 +36,11 @@ class CommandBase(object):
         self.parser = OptionParser(usage=usage, description=description)
         self.name = name
         self.metadir = mw.metadir.Metadir()
-        global_options = OptionGroup(self.parser, "Global Options")
-        global_options.add_option('-u', '--use-auth', action='store_true',
-                                  dest='use_auth', help='force authentication '
-                                  'even if not required')
-        self.parser.add_option_group(global_options)
+        #global_options = OptionGroup(self.parser, "Global Options")
+        #global_options.add_option('-u', '--use-auth', action='store_true',
+        #                          dest='use_auth', help='force authentication '
+        #                          'even if not required')
+        #self.parser.add_option_group(global_options)
         self.shortcuts = []
 
     def main(self):
@@ -75,13 +75,15 @@ class InitCommand(CommandBase):
     def __init__(self):
         usage = 'API_URL'
         CommandBase.__init__(self, 'init', 'start a mw repo', usage)
+        self.parser.add_option('-u', '--username', dest='username',
+                               help='use wiki with login')
 
     def _do_command(self):
         if len(self.args) < 1:
             self.parser.error('must have URL to remote api.php')
         elif len(self.args) > 1:
             self.parser.error('too many arguments')
-        self.metadir.create(self.args[0])
+        self.metadir.create(self.args[0], self.options.username)
 
 
 class PullCommand(CommandBase):
