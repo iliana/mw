@@ -19,6 +19,8 @@
 import cookielib
 import gzip
 import json
+import mw.metadir
+import os
 from StringIO import StringIO
 import urllib
 import urllib2
@@ -26,9 +28,17 @@ import urllib2
 
 class API(object):
 
-    def __init__(self, api_url):
+    def __init__(self, api_url, metadir):
         self.api_url = api_url
-        self.cookiejar = cookielib.CookieJar()
+        self.metadir = metadir
+        self.cookiejar = cookielib.MozillaCookieJar(os.path.join(
+                self.metadir.location, 'cookies'
+        ))
+        try:
+            self.cookiejar.load()
+        except IOError:
+            self.cookiejar.save()
+            self.cookiejar.load()
         self.opener = urllib2.build_opener(
                 urllib2.HTTPCookieProcessor(self.cookiejar))
         self._high_limits = None
@@ -38,6 +48,7 @@ class API(object):
         request = urllib2.Request(self.api_url, urllib.urlencode(data))
         request.add_header('Accept-encoding', 'gzip')
         response = self.opener.open(request)
+        self.cookiejar.save()
         if response.headers.get('Content-Encoding') == 'gzip':
             compressed = StringIO(response.read())
             gzipper = gzip.GzipFile(fileobj=compressed)

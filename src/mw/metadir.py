@@ -49,7 +49,11 @@ class Metadir(object):
         else:
             self.config = None
 
-    def create(self, api_url, username=None):
+    def save_config(self):
+        with open(self.config_loc, 'wb') as config_file:
+            self.config.write(config_file)
+
+    def create(self, api_url):
         # create the directory
         if os.path.isdir(self.location):
             print '%s: you are already in a mw repo' % self.me
@@ -64,10 +68,7 @@ class Metadir(object):
         self.config = ConfigParser.RawConfigParser()
         self.config.add_section('remote')
         self.config.set('remote', 'api_url', api_url)
-        if username != None:
-            self.config.set('remote', 'username', username)
-        with open(self.config_loc, 'wb') as config_file:
-            self.config.write(config_file)
+        self.save_config()
         # create cache/
         os.mkdir(os.path.join(self.location, 'cache'))
         # create cache/pagedict

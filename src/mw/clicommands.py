@@ -57,8 +57,11 @@ class CommandBase(object):
         result = self.api.call({'action': 'login',
                                 'lgname': user,
                                 'lgpassword': passwd})
-        if result['login']['result'] != 'Success':
-            raise Exception('Login error: %s' % result['login']['result'])
+        if result['login']['result'] == 'Success':
+            # cookies are saved to a file
+            print 'Login successful! (yay)'
+        else:
+            print 'Login failed: %s' % result['login']['result']
 
     def _die_if_no_init(self):
         if self.metadir.config is None:
@@ -67,7 +70,7 @@ class CommandBase(object):
 
     def _api_setup(self):
         self.api_url = self.metadir.config.get('remote', 'api_url')
-        self.api = mw.api.API(self.api_url)
+        self.api = mw.api.API(self.api_url, self.metadir)
 
 
 class InitCommand(CommandBase):
@@ -75,15 +78,24 @@ class InitCommand(CommandBase):
     def __init__(self):
         usage = 'API_URL'
         CommandBase.__init__(self, 'init', 'start a mw repo', usage)
-        self.parser.add_option('-u', '--username', dest='username',
-                               help='use wiki with login')
 
     def _do_command(self):
         if len(self.args) < 1:
             self.parser.error('must have URL to remote api.php')
         elif len(self.args) > 1:
             self.parser.error('too many arguments')
-        self.metadir.create(self.args[0], self.options.username)
+        self.metadir.create(self.args[0])
+
+
+class LoginCommand(CommandBase):
+
+    def __init__(self):
+        CommandBase.__init__(self, 'login', 'authenticate with wiki')
+
+    def _do_command(self):
+        self._die_if_no_init()
+        self._api_setup()
+        self._login()
 
 
 class PullCommand(CommandBase):
