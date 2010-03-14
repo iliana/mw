@@ -105,7 +105,8 @@ class Metadir(object):
             pagedata = json.loads(pagedata_raw)
         rvid = int(rv['revid'])
         pagedata[rvid] = {
-                'user': rv['user'], 'timestamp': rv['timestamp']
+                'user': rv['user'],
+                'timestamp': rv['timestamp'],
         }
         if '*' in rv.keys():
             pagedata[rvid]['content'] = rv['*']
@@ -168,17 +169,17 @@ class Metadir(object):
                 oldrvid = self.pages_get_rv_list(pageid)[-1]
             oldrv = self.pages_get_rv(pageid, oldrvid)
             oldname = 'a/%s (revision %i)' % (filename, oldrvid)
-            old = [i+'\n' for i in oldrv['content'].split('\n')]
+            old = [i + '\n' for i in oldrv['content'].split('\n')]
             if newrvid == 0:
                 cur_content = codecs.open(filename, 'r', 'utf-8').read()
                 if cur_content[-1] == '\n':
                     cur_content = cur_content[:-1]
                 newname = 'b/%s (working copy)' % filename
-                new = [i+'\n' for i in cur_content.split('\n')]
+                new = [i + '\n' for i in cur_content.split('\n')]
             else:
                 newrv = self.pages_get_rv(pageid, newrvid)
                 newname = 'b/%s (revision %i)' % (filename, newrvid)
-                new = [i+'\n' for i in newrv['content'].split('\n')]
+                new = [i + '\n' for i in newrv['content'].split('\n')]
             diff_fd = StringIO()
             bzrlib.diff.internal_diff(oldname, old, newname, new, diff_fd)
             diff_fd.seek(0)

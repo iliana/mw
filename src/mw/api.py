@@ -32,8 +32,7 @@ class API(object):
         self.api_url = api_url
         self.metadir = metadir
         self.cookiejar = cookielib.MozillaCookieJar(os.path.join(
-                self.metadir.location, 'cookies'
-        ))
+                self.metadir.location, 'cookies'))
         try:
             self.cookiejar.load()
         except IOError:
