@@ -232,6 +232,7 @@ class CommitCommand(CommandBase):
                         'token': edittoken,
                         'text': text,
                         'md5': textmd5,
+                        'summary': edit_summary,
                 }
                 response = self.api.call(data)
                 if response['edit']['result'] == 'Success':
