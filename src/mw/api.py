@@ -44,7 +44,10 @@ class API(object):
             data = gzipper.read()
         else:
             data = response.read()
-        return json.loads(data)
+        the_data = json.loads(data)
+        if 'error' in the_data.keys():
+            raise APIError(the_data['error']['info'])
+        return
 
     def limits(self, low, high):
         if self._high_limits == None:
@@ -57,6 +60,15 @@ class API(object):
             return high
         else:
             return low
+
+
+class APIError(Exception):
+
+    def __init__(self, info):
+        self.info = info
+
+    def __str__(self):
+        return self.info
 
 
 def pagename_to_filename(name):
