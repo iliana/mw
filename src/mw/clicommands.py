@@ -221,6 +221,7 @@ class CommitCommand(CommandBase):
                 # FIXME use basetimestamp and starttimestamp
                 filename = os.path.join(self.metadir.root, file)
                 text = codecs.open(filename, 'r', 'utf-8').read()
+                text = text.encode('utf-8')
                 if text[-1] == '\n':
                     text = text[:-1]
                 md5 = hashlib.md5()
@@ -244,7 +245,6 @@ class CommitCommand(CommandBase):
                                     'ids|flags|timestamp|user|comment|content',
                     }
                     response = self.api.call(data)['query']['pages']
-                    print response
                     self.metadir.pages_add_rv(int(pageid),
                                               response[pageid]['revisions'][0])
                 else:
