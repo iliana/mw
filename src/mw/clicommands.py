@@ -154,6 +154,7 @@ class CommitCommand(CommandBase):
 
     def __init__(self):
         CommandBase.__init__(self, 'commit', 'commit changes to wiki')
+        self.shortcuts.append('ci')
 
     def _do_command(self):
         self._die_if_no_init()
