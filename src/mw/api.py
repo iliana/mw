@@ -47,7 +47,7 @@ class API(object):
         the_data = json.loads(data)
         if 'error' in the_data.keys():
             raise APIError(the_data['error']['info'])
-        return
+        return the_data
 
     def limits(self, low, high):
         if self._high_limits == None:
