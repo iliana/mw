@@ -16,7 +16,9 @@
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 ###
 
+import codecs
 import getpass
+import hashlib
 import mw.api
 import mw.metadir
 from optparse import OptionParser, OptionGroup
@@ -180,7 +182,70 @@ class CommitCommand(CommandBase):
     def __init__(self):
         CommandBase.__init__(self, 'commit', 'commit changes to wiki')
         self.shortcuts.append('ci')
+        self.parser.add_option('-m', '--message', dest='edit_summary',
+                               help='don\'t prompt for edit summary and '
+                               'use this instead')
 
     def _do_command(self):
         self._die_if_no_init()
         self._api_setup()
+        print 'WARNING: mw does not do collision detection yet.'
+        print 'Hit ^C now if you haven\'t double checked, otherwise hit Enter'
+        raw_input()
+        status = self.metadir.working_dir_status()
+        nothing_to_commit = True
+        for file in status:
+            print '%s %s' % (status[file], file)
+            if status[file] in ['U']:
+                nothing_to_commit = False
+        if nothing_to_commit:
+            print 'nothing to commit'
+        else:
+            if self.options.edit_summary == None:
+                print 'Edit summary:',
+                edit_summary = raw_input()
+            else:
+                edit_summary = self.options.edit_summary
+        for file in status:
+            if status[file] in ['U']:
+                # get edit token
+                data = {
+                        'action': 'query',
+                        'prop': 'info',
+                        'intoken': 'edit',
+                        'titles': mw.api.filename_to_pagename(file[:-5]),
+                }
+                response = self.api.call(data)
+                pageid = response['query']['pages'].keys()[0]
+                edittoken = response['query']['pages'][pageid]['edittoken']
+                # FIXME use basetimestamp and starttimestamp
+                filename = os.path.join(self.metadir.root, file)
+                text = codecs.open(filename, 'r', 'utf-8').read()
+                if text[-1] == '\n':
+                    text = text[:-1]
+                md5 = hashlib.md5()
+                md5.update(text)
+                textmd5 = md5.hexdigest()
+                data = {
+                        'action': 'edit',
+                        'title': mw.api.filename_to_pagename(file[:-5]),
+                        'token': edittoken,
+                        'text': text,
+                        'md5': textmd5,
+                }
+                response = self.api.call(data)
+                if response['edit']['result'] == 'Success':
+                    data = {
+                            'action': 'query',
+                            'revids': response['edit']['newrevid'],
+                            'prop': 'info|revisions',
+                            'rvprop':
+                                    'ids|flags|timestamp|user|comment|content',
+                    }
+                    response = self.api.call(data)['query']['pages']
+                    print response
+                    self.metadir.pages_add_rv(int(pageid),
+                                              response[pageid]['revisions'][0])
+                else:
+                    print 'committing %s failed: %s' % \
+                            (file, response['edit']['result'])
