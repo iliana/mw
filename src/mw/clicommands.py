@@ -98,6 +98,19 @@ class LoginCommand(CommandBase):
         self._login()
 
 
+class LogoutCommand(CommandBase):
+
+    def __init__(self):
+        CommandBase.__init__(self, 'logout', 'forget authentication')
+
+    def _do_command(self):
+        self._die_if_no_init()
+        try:
+            os.unlink(os.path.join(self.metadir.location, 'cookies'))
+        except OSError:
+            pass
+
+
 class PullCommand(CommandBase):
 
     def __init__(self):
