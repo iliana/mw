@@ -148,3 +148,13 @@ class DiffCommand(CommandBase):
                 print self.metadir.diff_rv_to_working(
                     mw.api.filename_to_pagename(file[:-5])
                 ),
+
+
+class CommitCommand(CommandBase):
+
+    def __init__(self):
+        CommandBase.__init__(self, 'commit', 'commit changes to wiki')
+
+    def _do_command(self):
+        self._die_if_no_init()
+        self._api_setup()
