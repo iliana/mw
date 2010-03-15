@@ -183,10 +183,7 @@ class CommitCommand(CommandBase):
     def _do_command(self):
         self._die_if_no_init()
         self._api_setup()
-        print 'WARNING: mw does not do collision detection yet.'
-        print 'Hit ^C now if you haven\'t double checked, otherwise hit Enter'
-        raw_input()
-        status = self.metadir.working_dir_status()
+        status = self.metadir.working_dir_status(files=self.args)
         nothing_to_commit = True
         for file in status:
             print '%s %s' % (status[file], file)
@@ -194,12 +191,16 @@ class CommitCommand(CommandBase):
                 nothing_to_commit = False
         if nothing_to_commit:
             print 'nothing to commit'
+            sys.exit()
+        print
+        print 'WARNING: mw does not do collision detection yet.'
+        print 'Hit ^C now if you haven\'t double checked, otherwise hit Enter'
+        raw_input()
+        if self.options.edit_summary == None:
+            print 'Edit summary:',
+            edit_summary = raw_input()
         else:
-            if self.options.edit_summary == None:
-                print 'Edit summary:',
-                edit_summary = raw_input()
-            else:
-                edit_summary = self.options.edit_summary
+            edit_summary = self.options.edit_summary
         for file in status:
             if status[file] in ['U']:
                 # get edit token

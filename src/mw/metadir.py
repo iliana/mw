@@ -131,14 +131,18 @@ class Metadir(object):
         pagedata = json.loads(fd.read())
         return pagedata[str(rvid)]
 
-    def working_dir_status(self):
+    def working_dir_status(self, files=None):
         status = {}
         check = []
-        for root, dirs, files in os.walk(self.root):
-            if root == self.root:
-                dirs.remove('.mw')
-            for name in files:
-                check.append(os.path.join(root, name))
+        if files == None or files == []:
+            for root, dirs, files in os.walk(self.root):
+                if root == self.root:
+                    dirs.remove('.mw')
+                for name in files:
+                    check.append(os.path.join(root, name))
+        else:
+            for file in files:
+                check.append(os.path.join(os.getcwd(), file))
         check.sort()
         for full in check:
             name = os.path.split(full)[1]
