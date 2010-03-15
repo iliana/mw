@@ -174,7 +174,8 @@ class DiffCommand(CommandBase):
 class CommitCommand(CommandBase):
 
     def __init__(self):
-        CommandBase.__init__(self, 'commit', 'commit changes to wiki')
+        usage = '[FILES]'
+        CommandBase.__init__(self, 'commit', 'commit changes to wiki', usage)
         self.shortcuts.append('ci')
         self.parser.add_option('-m', '--message', dest='edit_summary',
                                help='don\'t prompt for edit summary and '
