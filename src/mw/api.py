@@ -19,6 +19,7 @@
 import cookielib
 import gzip
 import json
+import mw
 import mw.metadir
 import os
 from StringIO import StringIO
@@ -44,7 +45,9 @@ class API(object):
 
     def call(self, data):
         data['format'] = 'json'
-        request = urllib2.Request(self.api_url, urllib.urlencode(data))
+        user_agent = 'mw/%s +http://github.com/ianweller/mw' % mw.version
+        request = urllib2.Request(self.api_url, urllib.urlencode(data),
+                                  {'User-Agent': user_agent})
         request.add_header('Accept-encoding', 'gzip')
         response = self.opener.open(request)
         self.cookiejar.save()
