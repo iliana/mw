@@ -180,6 +180,10 @@ class CommitCommand(CommandBase):
         self.parser.add_option('-m', '--message', dest='edit_summary',
                                help='don\'t prompt for edit summary and '
                                'use this instead')
+        self.parser.add_option('--bot', dest='bot', action='store_true',
+                               help='mark actions as a bot (won\'t affect '
+                               'anything if you don\'t have the bot right',
+                               default=False)
 
     def _do_command(self):
         self._die_if_no_init()
@@ -231,6 +235,8 @@ class CommitCommand(CommandBase):
                         'md5': textmd5,
                         'summary': edit_summary,
                 }
+                if self.options.bot:
+                    data['bot'] = 'bot'
                 response = self.api.call(data)
                 if response['edit']['result'] == 'Success':
                     data = {
