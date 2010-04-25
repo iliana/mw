@@ -57,6 +57,16 @@ class CommandBase(object):
         if result['login']['result'] == 'Success':
             # cookies are saved to a file
             print 'Login successful! (yay)'
+        elif result['login']['result'] == 'NeedToken':
+            print'Login with token'
+            result = self.api.call({'action': 'login',
+                               'lgname': user,
+                               'lgpassword': passwd,
+                               'lgtoken': result['login']['token']})
+            if result['login']['result'] == 'Success':
+                print 'Login successful! (yay)'
+    else:
+        print 'Login failed: %s' % result['login']['result']
         else:
             print 'Login failed: %s' % result['login']['result']
 
