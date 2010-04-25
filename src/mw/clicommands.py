@@ -65,8 +65,8 @@ class CommandBase(object):
                                     'lgtoken': result['login']['token']})
             if result['login']['result'] == 'Success':
                 print 'Login successful! (yay)'
-    else:
-        print 'Login failed: %s' % result['login']['result']
+            else:
+                print 'Login failed: %s' % result['login']['result']
         else:
             print 'Login failed: %s' % result['login']['result']
 
