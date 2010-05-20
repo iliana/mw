@@ -149,10 +149,8 @@ class PullCommand(CommandBase):
                 self.metadir.pages_add_rv(int(pageid),
                                           response[pageid]['revisions'][0])
                 filename = mw.api.pagename_to_filename(pagename)
-                fd = file(os.path.join(self.metadir.root, filename + '.wiki'),
-                          'w')
-                fd.write(response[pageid]['revisions'][0]['*'].encode('utf-8'))
-
+                with file(os.path.join(self.metadir.root, filename + '.wiki'), 'w') as fd:
+                  fd.write(response[pageid]['revisions'][0]['*'].encode('utf-8'))
 
 class StatusCommand(CommandBase):
 
@@ -221,12 +219,18 @@ class CommitCommand(CommandBase):
                 # get edit token
                 data = {
                         'action': 'query',
-                        'prop': 'info',
+                        'prop': 'info|revisions',
                         'intoken': 'edit',
                         'titles': mw.api.filename_to_pagename(file[:-5]),
                 }
                 response = self.api.call(data)
                 pageid = response['query']['pages'].keys()[0]
+                revid = response['query']['pages'][pageid]['revisions'][0]['revid']
+                awaitedrevid = self.metadir.pages_get_rv_list( {'id': pageid } )[0]                
+                if revid != awaitedrevid :
+                     print "Ignoring %s - Edition conflict detected %s - %s " % ( file , awaitedrevid, revid)
+                     continue
+                raw_input()
                 edittoken = response['query']['pages'][pageid]['edittoken']
                 # FIXME use basetimestamp and starttimestamp
                 filename = os.path.join(self.metadir.root, file)
@@ -249,6 +253,13 @@ class CommitCommand(CommandBase):
                     data['bot'] = 'bot'
                 response = self.api.call(data)
                 if response['edit']['result'] == 'Success':
+                    if response['edit'].has_key('nochange') :
+                      print "Ignoring %s - No changes were detected - Removing ending lf" %  file 
+                      self.metadir.clean_page(file[:-5])
+                      continue
+                    if response['edit']['oldrevid'] != revid :
+                      print "Ignoring %s - Colision detected " % file
+                      continue
                     data = {
                             'action': 'query',
                             'revids': response['edit']['newrevid'],
