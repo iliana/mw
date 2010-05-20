@@ -155,7 +155,7 @@ class Metadir(object):
                     rvid = self.pages_get_rv_list(pageid)[-1]
                     rv = self.pages_get_rv(pageid, rvid)
                     cur_content = codecs.open(full, 'r', 'utf-8').read()
-                    if cur_content[-1] == '\n':
+                    if (len(cur_content) != 0) and (cur_content[-1] == '\n'):
                         cur_content = cur_content[:-1]
                     if cur_content != rv['content']:
                         status[os.path.relpath(full, self.root)] = 'U'
@@ -176,7 +176,7 @@ class Metadir(object):
             old = [i + '\n' for i in oldrv['content'].split('\n')]
             if newrvid == 0:
                 cur_content = codecs.open(filename, 'r', 'utf-8').read()
-                if cur_content[-1] == '\n':
+                if (len(cur_content) != 0) and (cur_content[-1] == '\n'):
                     cur_content = cur_content[:-1]
                 newname = 'b/%s (working copy)' % filename
                 new = [i + '\n' for i in cur_content.split('\n')]

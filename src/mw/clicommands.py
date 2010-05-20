@@ -232,7 +232,7 @@ class CommitCommand(CommandBase):
                 filename = os.path.join(self.metadir.root, file)
                 text = codecs.open(filename, 'r', 'utf-8').read()
                 text = text.encode('utf-8')
-                if text[-1] == '\n':
+                if (len(text) != 0) and (text[-1] == '\n'):
                     text = text[:-1]
                 md5 = hashlib.md5()
                 md5.update(text)
