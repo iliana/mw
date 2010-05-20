@@ -102,6 +102,7 @@ class Metadir(object):
     def get_pageid_from_pagename(self, pagename):
         fd = file(os.path.join(self.location, 'cache', 'pagedict'), 'r')
         pagedict = json.loads(fd.read())
+        pagename = pagename.decode('utf-8')
         if pagename in pagedict.keys():
             return pagedict[pagename]
         else:
@@ -177,6 +178,7 @@ class Metadir(object):
         # oldrvid=0 means latest fetched revision
         # newrvid=0 means working copy
         filename = mw.api.pagename_to_filename(pagename) + '.wiki'
+        filename = filename.decode('utf-8')
         pageid = self.get_pageid_from_pagename(pagename)
         if not pageid:
             raise ValueError('page named %s has not been fetched' % pagename)
@@ -185,9 +187,9 @@ class Metadir(object):
                 oldrvid = self.pages_get_rv_list(pageid)[-1]
             oldrv = self.pages_get_rv(pageid, oldrvid)
             oldname = 'a/%s (revision %i)' % (filename, oldrvid)
-            old = [i + '\n' for i in oldrv['content'].split('\n')]
+            old = [i + '\n' for i in oldrv['content'].encode('utf-8').split('\n')]
             if newrvid == 0:
-                cur_content = codecs.open(filename, 'r', 'utf-8').read()
+                cur_content = codecs.open(filename, 'r', 'utf-8').read().encode('utf-8')
                 if (len(cur_content) != 0) and (cur_content[-1] == '\n'):
                     cur_content = cur_content[:-1]
                 newname = 'b/%s (working copy)' % filename
@@ -198,8 +200,7 @@ class Metadir(object):
                 new = [i + '\n' for i in newrv['content'].split('\n')]
             diff_fd = StringIO()
             bzrlib.diff.internal_diff(oldname, old, newname, new, diff_fd)
-            diff_fd.seek(0)
-            diff = diff_fd.read()
+            diff = diff_fd.getvalue()
             if diff[-1] == '\n':
                 diff = diff[:-1]
             return diff

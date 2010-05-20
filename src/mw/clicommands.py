@@ -230,7 +230,6 @@ class CommitCommand(CommandBase):
                 if revid != awaitedrevid :
                      print "Ignoring %s - Edition conflict detected %s - %s " % ( file , awaitedrevid, revid)
                      continue
-                raw_input()
                 edittoken = response['query']['pages'][pageid]['edittoken']
                 # FIXME use basetimestamp and starttimestamp
                 filename = os.path.join(self.metadir.root, file)
