@@ -190,7 +190,7 @@ class CommitCommand(CommandBase):
         self.parser.add_option('-m', '--message', dest='edit_summary',
                                help='don\'t prompt for edit summary and '
                                'use this instead')
-        self.parser.add_option('--bot', dest='bot', action='store_true',
+        self.parser.add_option('-b', '--bot', dest='bot', action='store_true',
                                help='mark actions as a bot (won\'t affect '
                                'anything if you don\'t have the bot right',
                                default=False)
