@@ -225,8 +225,9 @@ class CommitCommand(CommandBase):
                 pageid = response['query']['pages'].keys()[0]
                 revid = response['query']['pages'][pageid]['revisions'][0]['revid']
                 awaitedrevid = self.metadir.pages_get_rv_list( {'id': pageid } )[0]                
-                if revid != awaitedrevid :
-                    print "Ignoring %s - Edition conflict detected %s - %s " % ( file , awaitedrevid, revid)
+                if revid != awaitedrevid:
+                    print "warning: edit conflict detected on %s (%s -> %s) " \
+                            "-- skipping!" % (file , awaitedrevid, revid)
                     continue
                 edittoken = response['query']['pages'][pageid]['edittoken']
                 # FIXME use basetimestamp and starttimestamp
@@ -251,12 +252,13 @@ class CommitCommand(CommandBase):
                 response = self.api.call(data)
                 if response['edit']['result'] == 'Success':
                     if response['edit'].has_key('nochange'):
-                        print "Ignoring %s - No changes were detected - " \
-                                "Removing ending lf" % file
+                        print "warning: no changes detected in %s - " \
+                                "skipping and removing ending LF" % file
                         self.metadir.clean_page(file[:-5])
                         continue
                     if response['edit']['oldrevid'] != revid:
-                        print "Ignoring %s - Colision detected " % file
+                        print "warning: edit conflict detected on %s -- " \
+                                "skipping!" % file
                         continue
                     data = {
                             'action': 'query',
@@ -269,5 +271,5 @@ class CommitCommand(CommandBase):
                     self.metadir.pages_add_rv(int(pageid),
                                               response[pageid]['revisions'][0])
                 else:
-                    print 'committing %s failed: %s' % \
+                    print 'error: committing %s failed: %s' % \
                             (file, response['edit']['result'])
