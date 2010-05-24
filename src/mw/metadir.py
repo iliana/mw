@@ -84,7 +84,7 @@ class Metadir(object):
         if len(cur_content) != 0 and cur_content[-1] == '\n':
             cur_content = cur_content[:-1]
         fd = file(filename, 'w')
-        fd.write(cur_content.encode('utf-8'))   
+        fd.write(cur_content.encode('utf-8'))
         fd.close()
 
     def pagedict_add(self, pagename, pageid, currentrv):
@@ -184,9 +184,11 @@ class Metadir(object):
                 oldrvid = self.pages_get_rv_list(pageid)[-1]
             oldrv = self.pages_get_rv(pageid, oldrvid)
             oldname = 'a/%s (revision %i)' % (filename, oldrvid)
-            old = [i + '\n' for i in oldrv['content'].encode('utf-8').split('\n')]
+            old = [i + '\n' for i in \
+                   oldrv['content'].encode('utf-8').split('\n')]
             if newrvid == 0:
-                cur_content = codecs.open(filename, 'r', 'utf-8').read().encode('utf-8')
+                cur_content = codecs.open(filename, 'r', 'utf-8').read()
+                cur_content = cur_content.encode('utf-8')
                 if (len(cur_content) != 0) and (cur_content[-1] == '\n'):
                     cur_content = cur_content[:-1]
                 newname = 'b/%s (working copy)' % filename

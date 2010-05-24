@@ -151,8 +151,10 @@ class PullCommand(CommandBase):
                 filename = mw.api.pagename_to_filename(pagename)
                 with file(os.path.join(self.metadir.root, filename + '.wiki'),
                           'w') as fd:
-                    data = response[pageid]['revisions'][0]['*'].encode('utf-8')
+                    data = response[pageid]['revisions'][0]['*']
+                    data = data.encode('utf-8')
                     fd.write(data)
+
 
 class StatusCommand(CommandBase):
 
@@ -223,14 +225,15 @@ class CommitCommand(CommandBase):
                 }
                 response = self.api.call(data)
                 pageid = response['query']['pages'].keys()[0]
-                revid = response['query']['pages'][pageid]['revisions'][0]['revid']
-                awaitedrevid = self.metadir.pages_get_rv_list( {'id': pageid } )[0]                
+                revid = response['query']['pages'][pageid]['revisions'][0]\
+                        ['revid']
+                awaitedrevid = self.metadir.pages_get_rv_list({'id': pageid})\
+                        [0]
                 if revid != awaitedrevid:
-                    print "warning: edit conflict detected on %s (%s -> %s) " \
-                            "-- skipping!" % (file , awaitedrevid, revid)
+                    print 'warning: edit conflict detected on %s (%s -> %s) ' \
+                            '-- skipping!' % (file, awaitedrevid, revid)
                     continue
                 edittoken = response['query']['pages'][pageid]['edittoken']
-                # FIXME use basetimestamp and starttimestamp
                 filename = os.path.join(self.metadir.root, file)
                 text = codecs.open(filename, 'r', 'utf-8').read()
                 text = text.encode('utf-8')
@@ -251,14 +254,14 @@ class CommitCommand(CommandBase):
                     data['bot'] = 'bot'
                 response = self.api.call(data)
                 if response['edit']['result'] == 'Success':
-                    if response['edit'].has_key('nochange'):
-                        print "warning: no changes detected in %s - " \
-                                "skipping and removing ending LF" % file
+                    if 'nochange' in response['edit']:
+                        print 'warning: no changes detected in %s - ' \
+                                'skipping and removing ending LF' % file
                         self.metadir.clean_page(file[:-5])
                         continue
                     if response['edit']['oldrevid'] != revid:
-                        print "warning: edit conflict detected on %s -- " \
-                                "skipping!" % file
+                        print 'warning: edit conflict detected on %s -- ' \
+                                'skipping!' % file
                         continue
                     data = {
                             'action': 'query',
