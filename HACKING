@@ -1,6 +1,18 @@
-Run this awesome whatnot with:
-  PYTHONPATH=$PWD/src bin/mw
+ _____________________________
+< Patches are always welcome! >
+ -----------------------------
+       \   ,__,
+        \  (oo)____
+           (__)    )\
+              ||--|| *
+
+The preferred method of submitting patches is by forking the repository,
+committing changes, and then making the repository accessible. This is most
+easily done on GitHub, but you can put it anywhere I can get it.
 
 Changing how something already works in the .mw metadir requires a damn
-good reason and we don't want to introduce incompatibilities at all in
-the tree. On the other hand, patches are greatly welcomed!
+good reason since we don't want to introduce incompatibilities at all in
+the tree.
+
+Code submitted should follow PEP 8. If it doesn't, I'll modify your changes (in
+later commits) until they are in line that style.
