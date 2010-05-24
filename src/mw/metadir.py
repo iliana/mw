@@ -78,14 +78,11 @@ class Metadir(object):
         # create cache/pages/
         os.mkdir(os.path.join(self.location, 'cache', 'pages'), 0755)
 
-
-
     def clean_page(self, pagename):
         filename = mw.api.pagename_to_filename(pagename) + '.wiki'
         cur_content = codecs.open(filename, 'r', 'utf-8').read()
-        if ( (len(cur_content) != 0) and (cur_content[-1] == '\n') ):
-           cur_content = cur_content[:-1]
-
+        if len(cur_content) != 0 and cur_content[-1] == '\n':
+            cur_content = cur_content[:-1]
         fd = file(filename, 'w')
         fd.write(cur_content.encode('utf-8'))   
         fd.close()
