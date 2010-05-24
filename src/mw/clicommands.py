@@ -205,10 +205,6 @@ class CommitCommand(CommandBase):
         if nothing_to_commit:
             print 'nothing to commit'
             sys.exit()
-        print
-        print 'WARNING: mw does not do collision detection yet.'
-        print 'Hit ^C now if you haven\'t double checked, otherwise hit Enter'
-        raw_input()
         if self.options.edit_summary == None:
             print 'Edit summary:',
             edit_summary = raw_input()
