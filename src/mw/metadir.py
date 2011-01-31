@@ -20,7 +20,6 @@ import bzrlib.diff
 import codecs
 import ConfigParser
 import json
-import mw.api
 import os
 from StringIO import StringIO
 import sys
@@ -79,7 +78,7 @@ class Metadir(object):
         os.mkdir(os.path.join(self.location, 'cache', 'pages'), 0755)
 
     def clean_page(self, pagename):
-        filename = mw.api.pagename_to_filename(pagename) + '.wiki'
+        filename = pagename_to_filename(pagename) + '.wiki'
         cur_content = codecs.open(filename, 'r', 'utf-8').read()
         if len(cur_content) != 0 and cur_content[-1] == '\n':
             cur_content = cur_content[:-1]
@@ -157,7 +156,7 @@ class Metadir(object):
         for full in check:
             name = os.path.split(full)[1]
             if name[-5:] == '.wiki':
-                pagename = mw.api.filename_to_pagename(name[:-5])
+                pagename = filename_to_pagename(name[:-5])
                 pageid = self.get_pageid_from_pagename(pagename)
                 if not pageid:
                     status[os.path.relpath(full, self.root)] = '?'
@@ -174,7 +173,7 @@ class Metadir(object):
     def diff_rv_to_working(self, pagename, oldrvid=0, newrvid=0):
         # oldrvid=0 means latest fetched revision
         # newrvid=0 means working copy
-        filename = mw.api.pagename_to_filename(pagename) + '.wiki'
+        filename = pagename_to_filename(pagename) + '.wiki'
         filename = filename.decode('utf-8')
         pageid = self.get_pageid_from_pagename(pagename)
         if not pageid:
@@ -203,3 +202,15 @@ class Metadir(object):
             if diff[-1] == '\n':
                 diff = diff[:-1]
             return diff
+
+
+def pagename_to_filename(name):
+    name = name.replace(' ', '_')
+    name = name.replace('/', '!')
+    return name
+
+
+def filename_to_pagename(name):
+    name = name.replace('!', '/')
+    name = name.replace('_', ' ')
+    return name

@@ -17,12 +17,13 @@
 ###
 
 import codecs
+import cookielib
 import getpass
 import hashlib
-import mw.api
 import mw.metadir
 from optparse import OptionParser, OptionGroup
 import os
+import simplemediawiki
 import sys
 
 
@@ -76,8 +77,11 @@ class CommandBase(object):
             sys.exit(1)
 
     def _api_setup(self):
+        cookie_file = os.path.join(self.metadir.location, 'cookies')
+        print cookie_file
         self.api_url = self.metadir.config.get('remote', 'api_url')
-        self.api = mw.api.API(self.api_url, self.metadir)
+        self.api = simplemediawiki.MediaWiki(self.api_url,
+                                             cookie_file=cookie_file)
 
 
 class InitCommand(CommandBase):
@@ -148,7 +152,7 @@ class PullCommand(CommandBase):
                 self.metadir.pagedict_add(pagename, pageid, revids[-1])
                 self.metadir.pages_add_rv(int(pageid),
                                           response[pageid]['revisions'][0])
-                filename = mw.api.pagename_to_filename(pagename)
+                filename = mw.metadir.pagename_to_filename(pagename)
                 with file(os.path.join(self.metadir.root, filename + '.wiki'),
                           'w') as fd:
                     data = response[pageid]['revisions'][0]['*']
@@ -180,7 +184,7 @@ class DiffCommand(CommandBase):
         for file in status:
             if status[file] == 'U':
                 print self.metadir.diff_rv_to_working(
-                        mw.api.filename_to_pagename(file[:-5])),
+                        mw.metadir.filename_to_pagename(file[:-5])),
 
 
 class CommitCommand(CommandBase):
@@ -221,7 +225,7 @@ class CommitCommand(CommandBase):
                         'action': 'query',
                         'prop': 'info|revisions',
                         'intoken': 'edit',
-                        'titles': mw.api.filename_to_pagename(file[:-5]),
+                        'titles': mw.metadir.filename_to_pagename(file[:-5]),
                 }
                 response = self.api.call(data)
                 pageid = response['query']['pages'].keys()[0]
@@ -244,7 +248,7 @@ class CommitCommand(CommandBase):
                 textmd5 = md5.hexdigest()
                 data = {
                         'action': 'edit',
-                        'title': mw.api.filename_to_pagename(file[:-5]),
+                        'title': mw.metadir.filename_to_pagename(file[:-5]),
                         'token': edittoken,
                         'text': text,
                         'md5': textmd5,
