@@ -78,7 +78,6 @@ class CommandBase(object):
 
     def _api_setup(self):
         cookie_file = os.path.join(self.metadir.location, 'cookies')
-        print cookie_file
         self.api_url = self.metadir.config.get('remote', 'api_url')
         self.api = simplemediawiki.MediaWiki(self.api_url,
                                              cookie_file=cookie_file)
