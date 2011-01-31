@@ -25,6 +25,7 @@ from optparse import OptionParser, OptionGroup
 import os
 import simplemediawiki
 import sys
+import time
 
 
 class CommandBase(object):
@@ -119,6 +120,33 @@ class LogoutCommand(CommandBase):
             os.unlink(os.path.join(self.metadir.location, 'cookies'))
         except OSError:
             pass
+
+class PullCategoryMembersCommand(CommandBase):
+
+    def __init__(self):
+        usage = '[options] PAGENAME ...'
+        CommandBase.__init__(self, 'pullcat', 'add remote pages to repo belonging to the given category', usage)
+
+    def _do_command(self):
+        self._die_if_no_init()
+        self._api_setup()
+        pages = []
+        pages += self.args
+        for these_pages in [pages[i:i + 25] for i in range(0, len(pages), 25)]:
+#http://commons.wikimedia.org/w/api.php?action=query&format=xmlfm&generator=categorymembers&gcmlimit=500&gcmtitle=Category:User:Esby
+              data = {
+                      'action': 'query',
+                      'gcmtitle': '|'.join(these_pages),
+                      'generator' : 'categorymembers',
+                      'gcmlimit' : 500
+              }
+        response = self.api.call(data)['query']['pages']
+        for pageid in response.keys():
+          pagename = response[pageid]['title']
+          print pagename
+          pullc = PullCommand()
+          pullc.args = [pagename.encode('utf-8')]
+          pullc._do_command()
 
 
 class PullCommand(CommandBase):
@@ -276,6 +304,8 @@ class CommitCommand(CommandBase):
                     response = self.api.call(data)['query']['pages']
                     self.metadir.pages_add_rv(int(pageid),
                                               response[pageid]['revisions'][0])
+                    print 'waiting 10s before processing the next file'
+                    time.sleep(10)
                 else:
                     print 'error: committing %s failed: %s' % \
                             (file, response['edit']['result'])
