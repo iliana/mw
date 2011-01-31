@@ -61,7 +61,7 @@ class CLI(object):
         # determine what the subcommand is
         if len(sys.argv) > 1:
             if sys.argv[1] in self.all_commands:
-                the_command = sys.argv[1] # SWEET ACTION
+                the_command = sys.argv[1]  # SWEET ACTION
             elif sys.argv[1] in ['--help', '-h', 'help']:
                 self.usage()
             else:

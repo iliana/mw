@@ -44,7 +44,7 @@ class CommandBase(object):
 
     def main(self):
         (self.options, self.args) = self.parser.parse_args()
-        self.args = self.args[1:] # don't need the first thing
+        self.args = self.args[1:]  # don't need the first thing
         self._do_command()
 
     def _do_command(self):
@@ -121,11 +121,13 @@ class LogoutCommand(CommandBase):
         except OSError:
             pass
 
+
 class PullCategoryMembersCommand(CommandBase):
 
     def __init__(self):
         usage = '[options] PAGENAME ...'
-        CommandBase.__init__(self, 'pullcat', 'add remote pages to repo belonging to the given category', usage)
+        CommandBase.__init__(self, 'pullcat', 'add remote pages to repo '
+                             'belonging to the given category', usage)
 
     def _do_command(self):
         self._die_if_no_init()
@@ -133,20 +135,19 @@ class PullCategoryMembersCommand(CommandBase):
         pages = []
         pages += self.args
         for these_pages in [pages[i:i + 25] for i in range(0, len(pages), 25)]:
-#http://commons.wikimedia.org/w/api.php?action=query&format=xmlfm&generator=categorymembers&gcmlimit=500&gcmtitle=Category:User:Esby
-              data = {
-                      'action': 'query',
-                      'gcmtitle': '|'.join(these_pages),
-                      'generator' : 'categorymembers',
-                      'gcmlimit' : 500
-              }
+            data = {
+                'action': 'query',
+                'gcmtitle': '|'.join(these_pages),
+                'generator': 'categorymembers',
+                'gcmlimit': 500
+            }
         response = self.api.call(data)['query']['pages']
         for pageid in response.keys():
-          pagename = response[pageid]['title']
-          print pagename
-          pullc = PullCommand()
-          pullc.args = [pagename.encode('utf-8')]
-          pullc._do_command()
+            pagename = response[pageid]['title']
+            print pagename
+            pullc = PullCommand()
+            pullc.args = [pagename.encode('utf-8')]
+            pullc._do_command()
 
 
 class PullCommand(CommandBase):
@@ -255,16 +256,16 @@ class CommitCommand(CommandBase):
                         'titles': mw.metadir.filename_to_pagename(file[:-5]),
                 }
                 response = self.api.call(data)
-                pageid = response['query']['pages'].keys()[0]
-                revid = response['query']['pages'][pageid]['revisions'][0]\
-                        ['revid']
-                awaitedrevid = self.metadir.pages_get_rv_list({'id': pageid})\
-                        [0]
+                pages = response['query']['pages']
+                pageid = pages.keys()[0]
+                revid = pages[pageid]['revisions'][0]['revid']
+                awaitedrevid = \
+                        self.metadir.pages_get_rv_list({'id': pageid})[0]
                 if revid != awaitedrevid:
                     print 'warning: edit conflict detected on %s (%s -> %s) ' \
                             '-- skipping!' % (file, awaitedrevid, revid)
                     continue
-                edittoken = response['query']['pages'][pageid]['edittoken']
+                edittoken = pages['pages'][pageid]['edittoken']
                 filename = os.path.join(self.metadir.root, file)
                 text = codecs.open(filename, 'r', 'utf-8').read()
                 text = text.encode('utf-8')

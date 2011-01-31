@@ -61,7 +61,7 @@ class Metadir(object):
             os.mkdir(self.location, 0755)
         # metadir versioning
         fd = file(os.path.join(self.location, 'version'), 'w')
-        fd.write('1') # XXX THIS API VERSION NOT LOCKED IN YET
+        fd.write('1')  # XXX THIS API VERSION NOT LOCKED IN YET
         fd.close()
         # create config
         self.config = ConfigParser.RawConfigParser()
