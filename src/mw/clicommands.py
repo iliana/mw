@@ -24,6 +24,7 @@ import mw.metadir
 from optparse import OptionParser, OptionGroup
 import os
 import sys
+import time
 
 
 class CommandBase(object):
@@ -117,6 +118,33 @@ class LogoutCommand(CommandBase):
         except OSError:
             pass
 
+class PullCategoryMembersCommand(CommandBase):
+
+    def __init__(self):
+        usage = '[options] PAGENAME ...'
+        CommandBase.__init__(self, 'pullcat', 'add remote pages to repo belonging to the given category', usage)
+
+    def _do_command(self):
+        self._die_if_no_init()
+        self._api_setup()
+        pages = []
+        pages += self.args
+        for these_pages in [pages[i:i + 25] for i in range(0, len(pages), 25)]:
+#http://commons.wikimedia.org/w/api.php?action=query&format=xmlfm&generator=categorymembers&gcmlimit=500&gcmtitle=Category:User:Esby
+              data = {
+                      'action': 'query',
+                      'gcmtitle': '|'.join(these_pages),
+                      'generator' : 'categorymembers',
+                      'gcmlimit' : 500
+              }
+        response = self.api.call(data)['query']['pages']
+        for pageid in response.keys():
+          pagename = response[pageid]['title']
+          print pagename
+          pullc = PullCommand()
+          pullc.args = [pagename.encode('utf-8')]
+          pullc._do_command()
+
 
 class PullCommand(CommandBase):
 
@@ -149,8 +177,12 @@ class PullCommand(CommandBase):
                 self.metadir.pages_add_rv(int(pageid),
                                           response[pageid]['revisions'][0])
                 filename = mw.api.pagename_to_filename(pagename)
-                with file(os.path.join(self.metadir.root, filename + '.wiki'), 'w') as fd:
-                  fd.write(response[pageid]['revisions'][0]['*'].encode('utf-8'))
+                with file(os.path.join(self.metadir.root, filename + '.wiki'),
+                          'w') as fd:
+                    data = response[pageid]['revisions'][0]['*']
+                    data = data.encode('utf-8')
+                    fd.write(data)
+
 
 class StatusCommand(CommandBase):
 
@@ -205,10 +237,6 @@ class CommitCommand(CommandBase):
         if nothing_to_commit:
             print 'nothing to commit'
             sys.exit()
-        print
-        print 'WARNING: mw does not do collision detection yet.'
-        print 'Hit ^C now if you haven\'t double checked, otherwise hit Enter'
-        raw_input()
         if self.options.edit_summary == None:
             print 'Edit summary:',
             edit_summary = raw_input()
@@ -225,13 +253,15 @@ class CommitCommand(CommandBase):
                 }
                 response = self.api.call(data)
                 pageid = response['query']['pages'].keys()[0]
-                revid = response['query']['pages'][pageid]['revisions'][0]['revid']
-                awaitedrevid = self.metadir.pages_get_rv_list( {'id': pageid } )[0]                
-                if revid != awaitedrevid :
-                     print "Ignoring %s - Edition conflict detected %s - %s " % ( file , awaitedrevid, revid)
-                     continue
+                revid = response['query']['pages'][pageid]['revisions'][0]\
+                        ['revid']
+                awaitedrevid = self.metadir.pages_get_rv_list({'id': pageid})\
+                        [0]
+                if revid != awaitedrevid:
+                    print 'warning: edit conflict detected on %s (%s -> %s) ' \
+                            '-- skipping!' % (file, awaitedrevid, revid)
+                    continue
                 edittoken = response['query']['pages'][pageid]['edittoken']
-                # FIXME use basetimestamp and starttimestamp
                 filename = os.path.join(self.metadir.root, file)
                 text = codecs.open(filename, 'r', 'utf-8').read()
                 text = text.encode('utf-8')
@@ -252,13 +282,15 @@ class CommitCommand(CommandBase):
                     data['bot'] = 'bot'
                 response = self.api.call(data)
                 if response['edit']['result'] == 'Success':
-                    if response['edit'].has_key('nochange') :
-                      print "Ignoring %s - No changes were detected - Removing ending lf" %  file 
-                      self.metadir.clean_page(file[:-5])
-                      continue
-                    if response['edit']['oldrevid'] != revid :
-                      print "Ignoring %s - Colision detected " % file
-                      continue
+                    if 'nochange' in response['edit']:
+                        print 'warning: no changes detected in %s - ' \
+                                'skipping and removing ending LF' % file
+                        self.metadir.clean_page(file[:-5])
+                        continue
+                    if response['edit']['oldrevid'] != revid:
+                        print 'warning: edit conflict detected on %s -- ' \
+                                'skipping!' % file
+                        continue
                     data = {
                             'action': 'query',
                             'revids': response['edit']['newrevid'],
@@ -269,6 +301,8 @@ class CommitCommand(CommandBase):
                     response = self.api.call(data)['query']['pages']
                     self.metadir.pages_add_rv(int(pageid),
                                               response[pageid]['revisions'][0])
+                    print 'waiting 10s before processing the next file'
+                    time.sleep(10)
                 else:
-                    print 'committing %s failed: %s' % \
+                    print 'error: committing %s failed: %s' % \
                             (file, response['edit']['result'])
