@@ -1,6 +1,6 @@
 ###
 # mw - VCS-like nonsense for MediaWiki websites
-# Copyright (C) 2010  Ian Weller <ian@ianweller.org>
+# Copyright (C) 2011  Ian Weller <ian@ianweller.org> and others
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

@@ -1,5 +1,5 @@
 mw - VCS-like nonsense for MediaWiki websites
-Copyright (C) 2010  Ian Weller <ian@ianweller.org>
+Copyright (C) 2011  Ian Weller <ian@ianweller.org> and others
 
 == Basic workflow ==
 We don't have a nice installation process yet, so set the following alias:
