@@ -210,7 +210,7 @@ class DiffCommand(CommandBase):
         self._die_if_no_init()
         status = self.metadir.working_dir_status()
         for file in status:
-            if status[file] == 'U':
+            if status[file] == 'M':
                 print self.metadir.diff_rv_to_working(
                         mw.metadir.filename_to_pagename(file[:-5])),
 
@@ -236,7 +236,7 @@ class CommitCommand(CommandBase):
         nothing_to_commit = True
         for file in status:
             print '%s %s' % (status[file], file)
-            if status[file] in ['U']:
+            if status[file] in ['M']:
                 nothing_to_commit = False
         if nothing_to_commit:
             print 'nothing to commit'
@@ -246,8 +246,8 @@ class CommitCommand(CommandBase):
             edit_summary = raw_input()
         else:
             edit_summary = self.options.edit_summary
-        for file in status:
-            if status[file] in ['U']:
+        for file_num, file in enumerate(status):
+            if status[file] in ['M']:
                 # get edit token
                 data = {
                         'action': 'query',
@@ -265,7 +265,7 @@ class CommitCommand(CommandBase):
                     print 'warning: edit conflict detected on %s (%s -> %s) ' \
                             '-- skipping!' % (file, awaitedrevid, revid)
                     continue
-                edittoken = pages['pages'][pageid]['edittoken']
+                edittoken = pages[pageid]['edittoken']
                 filename = os.path.join(self.metadir.root, file)
                 text = codecs.open(filename, 'r', 'utf-8').read()
                 text = text.encode('utf-8')
@@ -305,8 +305,9 @@ class CommitCommand(CommandBase):
                     response = self.api.call(data)['query']['pages']
                     self.metadir.pages_add_rv(int(pageid),
                                               response[pageid]['revisions'][0])
-                    print 'waiting 10s before processing the next file'
-                    time.sleep(10)
+                    if file_num != len(status) - 1:
+                        print 'waiting 10s before processing the next file'
+                        time.sleep(10)
                 else:
                     print 'error: committing %s failed: %s' % \
                             (file, response['edit']['result'])

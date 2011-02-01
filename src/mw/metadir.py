@@ -167,7 +167,7 @@ class Metadir(object):
                     if (len(cur_content) != 0) and (cur_content[-1] == '\n'):
                         cur_content = cur_content[:-1]
                     if cur_content != rv['content']:
-                        status[os.path.relpath(full, self.root)] = 'U'
+                        status[os.path.relpath(full, self.root)] = 'M'
         return status
 
     def diff_rv_to_working(self, pagename, oldrvid=0, newrvid=0):
