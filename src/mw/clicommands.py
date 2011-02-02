@@ -186,7 +186,7 @@ class PullCommand(CommandBase):
             for pageid in response.keys():
                 pagename = response[pageid]['title']
                 
-                # is the revisions list a sorted one, should I use [0] or [-1]?
+                # XXX is the revisions list a sorted one, should I use [0] or [-1]?
                 last_wiki_rev_comment = response[pageid]['revisions'][0]['comment']
                 last_wiki_rev_user = response[pageid]['revisions'][0]['user']
                 
@@ -319,6 +319,11 @@ class CommitCommand(CommandBase):
                 if self.options.bot:
                     data['bot'] = 'bot'
                 response = self.api.call(data)
+                 if 'error' in response:
+                     if 'code' in response['error']:
+                         if response['error']['code'] == 'permissiondenied':
+                             print 'Permission denied -- try running "mw login"'
+                             return
                 if response['edit']['result'] == 'Success':
                     if 'nochange' in response['edit']:
                         print 'warning: no changes detected in %s - ' \
