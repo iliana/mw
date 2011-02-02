@@ -319,11 +319,11 @@ class CommitCommand(CommandBase):
                 if self.options.bot:
                     data['bot'] = 'bot'
                 response = self.api.call(data)
-                 if 'error' in response:
-                     if 'code' in response['error']:
-                         if response['error']['code'] == 'permissiondenied':
-                             print 'Permission denied -- try running "mw login"'
-                             return
+                if 'error' in response:
+                    if 'code' in response['error']:
+                        if response['error']['code'] == 'permissiondenied':
+                            print 'Permission denied -- try running "mw login"'
+                            return
                 if response['edit']['result'] == 'Success':
                     if 'nochange' in response['edit']:
                         print 'warning: no changes detected in %s - ' \
