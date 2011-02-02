@@ -174,7 +174,7 @@ class PullCommand(CommandBase):
                 converted_pages.append(pagename)
         pages = converted_pages
 
-        for these_pages in [pages[i:i + 25] for i in range(0, len(pages), 25)]: # ?
+        for these_pages in [pages[i:i + 25] for i in range(0, len(pages), 25)]: # XXX ?
             data = {
                     'action': 'query',
                     'titles': '|'.join(these_pages),
@@ -182,30 +182,44 @@ class PullCommand(CommandBase):
                     'rvprop': 'ids|flags|timestamp|user|comment|content',
             }
             response = self.api.call(data)['query']['pages']
+            # for every pageid, returns dict.keys() = {'lastrevid', 'pageid', 'title', 'counter', 'length', 'touched': u'2011-02-02T19:32:04Z', 'ns', 'revisions' {...}}
             for pageid in response.keys():
                 pagename = response[pageid]['title']
-                # if pagename exists as file and its status is 'M' warn not pulled
+                
+                # is the revisions list a sorted one, should I use [0] or [-1]?
+                last_wiki_rev_comment = response[pageid]['revisions'][0]['comment']
+                last_wiki_rev_user = response[pageid]['revisions'][0]['user']
+                
+                # check if working file is modified or if wiki page doesn't exists
                 status = self.metadir.working_dir_status()
                 filename = mw.metadir.pagename_to_filename(pagename)
+                full_filename = os.path.join(self.metadir.root, filename + '.wiki')
                 if filename + '.wiki' in status and \
                     status[filename + '.wiki' ] in ['M']:
-                    print('%s: "%s" has uncommitted modifications ' 
-                        '-- skipping!' % (self.me, pagename))
+                    print 'skipping:       %s -- uncommitted modifications ' % (pagename)
                     continue
                 if 'missing' in response[pageid].keys():
                     print '%s: %s: page does not exist, file not created' % \
                             (self.me, pagename)
                     continue
-                revids = [x['revid'] for x in response[pageid]['revisions']]
-                revids.sort()
-                self.metadir.pagedict_add(pagename, pageid, revids[-1])
-                self.metadir.pages_add_rv(int(pageid),
-                                          response[pageid]['revisions'][0])
-                with file(os.path.join(self.metadir.root, filename + '.wiki'),
-                          'w') as fd:
-                    data = response[pageid]['revisions'][0]['*']
-                    data = data.encode('utf-8')
-                    fd.write(data)
+
+                wiki_revids = sorted([x['revid'] for x in response[pageid]['revisions']])
+                last_wiki_revid = wiki_revids[-1]
+                working_revids = sorted(self.metadir.pages_get_rv_list({'id' : pageid}))
+                last_working_revid = working_revids[-1]
+                if ( os.path.exists(full_filename) and 
+                        last_wiki_revid == last_working_revid):
+                    print 'wiki unchanged: %s' % (pagename)
+                else:
+                    print 'pulling:        %s : %s -- %s' % (
+                        pagename, last_wiki_rev_comment, last_wiki_rev_user)
+                    self.metadir.pagedict_add(pagename, pageid, last_wiki_revid)
+                    self.metadir.pages_add_rv(int(pageid),
+                                              response[pageid]['revisions'][0])
+                    with file(full_filename, 'w') as fd:
+                        data = response[pageid]['revisions'][0]['*']
+                        data = data.encode('utf-8')
+                        fd.write(data)
 
 
 class StatusCommand(CommandBase):
@@ -286,8 +300,8 @@ class CommitCommand(CommandBase):
                             '-- skipping!' % (file, awaitedrevid, revid)
                     continue
                 edittoken = pages[pageid]['edittoken']
-                filename = os.path.join(self.metadir.root, filename)
-                text = codecs.open(filename, 'r', 'utf-8').read()
+                full_filename = os.path.join(self.metadir.root, filename)
+                text = codecs.open(full_filename, 'r', 'utf-8').read()
                 text = text.encode('utf-8')
                 if (len(text) != 0) and (text[-1] == '\n'):
                     text = text[:-1]
@@ -309,11 +323,13 @@ class CommitCommand(CommandBase):
                     if 'nochange' in response['edit']:
                         print 'warning: no changes detected in %s - ' \
                                 'skipping and removing ending LF' % filename
-                        self.metadir.clean_page(filename[:-5])
+                        pagename = mw.metadir.filename_to_pagename(filename[:-5])
+                        self.metadir.clean_page(pagename)
                         continue
                     if response['edit']['oldrevid'] != revid:
-                        print 'warning: edit conflict detected on %s -- ' \
-                                'skipping!' % filename
+                        print 'warning: edit conflict detected on %s (%s -> %s) ' \
+                                '-- skipping!' % (file, 
+                                response['edit']['oldrevid'], revid)
                         continue
                     data = {
                             'action': 'query',

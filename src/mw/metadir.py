@@ -127,19 +127,25 @@ class Metadir(object):
     def pages_get_rv_list(self, pageid):
         pagefile = os.path.join(self.location, 'cache', 'pages',
                                 str(pageid['id']))
-        fd = file(pagefile, 'r')
-        pagedata = json.loads(fd.read())
-        rvs = [int(x) for x in pagedata.keys()]
-        rvs.sort()
-        return rvs
+        if os.path.exists(pagefile):
+            fd = file(pagefile, 'r')
+            pagedata = json.loads(fd.read())
+            rvs = [int(x) for x in pagedata.keys()]
+            rvs.sort()
+            return rvs
+        else:
+            return [None,]
 
     def pages_get_rv(self, pageid, rvid):
         pagefile = os.path.join(self.location, 'cache', 'pages',
                                 str(pageid['id']))
-        fd = file(pagefile, 'r')
-        pagedata = json.loads(fd.read())
-        return pagedata[str(rvid)]
-
+        if os.path.exists(pagefile):
+            fd = file(pagefile, 'r')
+            pagedata = json.loads(fd.read())
+            return pagedata[str(rvid)]
+        else:
+            return None
+            
     def working_dir_status(self, files=None):
         status = {}
         check = []
