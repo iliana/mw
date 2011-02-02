@@ -1,6 +1,6 @@
 ###
 # mw - VCS-like nonsense for MediaWiki websites
-# Copyright (C) 2011  Ian Weller <ian@ianweller.org> and others
+# Copyright (C) 2010  Ian Weller <ian@ianweller.org>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -167,7 +167,9 @@ class Metadir(object):
                     if (len(cur_content) != 0) and (cur_content[-1] == '\n'):
                         cur_content = cur_content[:-1]
                     if cur_content != rv['content']:
-                        status[os.path.relpath(full, self.root)] = 'M'
+                        status[os.path.relpath(full, self.root)] = 'M' # modified
+                    else:
+                        status[os.path.relpath(full, self.root)] = 'C' # clean
         return status
 
     def diff_rv_to_working(self, pagename, oldrvid=0, newrvid=0):
