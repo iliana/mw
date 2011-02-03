@@ -347,7 +347,7 @@ class CommitCommand(CommandBase):
                     self.metadir.pages_add_rv(int(pageid),
                                               response[pageid]['revisions'][0])
                     # need to write latest rev to file too, as text may be changed
-                    # such as a signature
+                    # such as a sig, e.g., -~ =>  -[[User:Reagle|Reagle]]
                     with file(full_filename, 'w') as fd:
                         data = response[pageid]['revisions'][0]['*']
                         data = data.encode('utf-8')
