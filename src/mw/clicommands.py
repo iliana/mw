@@ -346,6 +346,12 @@ class CommitCommand(CommandBase):
                     response = self.api.call(data)['query']['pages']
                     self.metadir.pages_add_rv(int(pageid),
                                               response[pageid]['revisions'][0])
+                    # need to write latest rev to file too, as text may be changed
+                    # such as a signature
+                    with file(full_filename, 'w') as fd:
+                        data = response[pageid]['revisions'][0]['*']
+                        data = data.encode('utf-8')
+                        fd.write(data)
                     if file_num != len(status) - 1:
                         print 'waiting 3s before processing the next file'
                         time.sleep(3)
