@@ -10,9 +10,22 @@ mw init http://example.com/w/api.php
 mw login  # if you need/want to
 mw pull 'Main Page'
 $EDITOR Main_Page.wiki
-mw fetch  # check for newer revisions; this command doesn't exist yet
-mw update  # apply newer revisions; this command doesn't exist yet
 mw commit
+mw status
+
+== Status command ==
+
+Will show whether a file has been locally modified ('M') or is clean ('C').
+
+== Pull command ==
+
+The pull command has the following features:
+
+* Can pull a new page/file, or update one.
+* Can be provided a page name or file name.
+* If the wiki has updates, it will pull those unless they conflict 
+  with local changes. The user must then resolve/merge conflicts.
+
 
 == License ==
 This program is free software; you can redistribute it and/or modify
