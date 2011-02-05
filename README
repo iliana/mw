@@ -1,10 +1,13 @@
 mw - VCS-like nonsense for MediaWiki websites
 Copyright (C) 2011  Ian Weller <ian@ianweller.org> and others
 
-== Basic workflow ==
+== Setup ==
+
 We don't have a nice installation process yet, so set the following alias:
   alias mw="PYTHONPATH=$PYTHONPATH:PATH_TO/mw/src PATH_TO/mw/bin/mw"
 where PATH_TO is the path to your local mw repository.
+
+== Basic workflow ==
 
 mw init http://example.com/w/api.php
 mw login  # if you need/want to
@@ -13,21 +16,34 @@ $EDITOR Main_Page.wiki
 mw commit
 mw status
 
-== Status command ==
+== Commands ==
 
-Will show whether a file has been locally modified ('M') or is clean ('C').
+usage: mw [subcommand]
 
-== Pull command ==
+        commit (ci)    commit changes to wiki   
+        diff           diff wiki to working directory
+        init           start a mw repo          
+        login          authenticate with wiki   
+        logout         forget authentication    
+        pull           add remote pages to repo 
+        pullcat        add remote pages to repo belonging to the given category
+        status (st)    check repo status     
 
-The pull command has the following features:
+=== Status command ===
+
+`status` Will show whether a file has been locally modified ('M') or is clean ('C').
+
+=== Pull command ===
+
+The `pull` command has the following features:
 
 * Can pull a new page/file, or update one.
 * Can be provided a page name or file name.
 * If the wiki has updates, it will pull those unless they conflict 
   with local changes. The user must then resolve/merge conflicts.
 
-
 == License ==
+
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
