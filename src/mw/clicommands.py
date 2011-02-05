@@ -24,6 +24,7 @@ import mw.metadir
 from optparse import OptionParser, OptionGroup
 import os
 import simplemediawiki
+import subprocess
 import sys
 import time
 
@@ -126,7 +127,7 @@ class PullCategoryMembersCommand(CommandBase):
 
     def __init__(self):
         usage = '[options] PAGENAME ...'
-        CommandBase.__init__(self, 'pullcat', 'add remote pages to repo '
+        CommandBase.__init__(self, 'pull_commandat', 'add remote pages to repo '
                              'belonging to the given category', usage)
 
     def _do_command(self):
@@ -145,9 +146,9 @@ class PullCategoryMembersCommand(CommandBase):
         for pageid in response.keys():
             pagename = response[pageid]['title']
             print pagename
-            pullc = PullCommand()
-            pullc.args = [pagename.encode('utf-8')]
-            pullc._do_command()
+            pull_command = PullCommand()
+            pull_command.args = [pagename.encode('utf-8')]
+            pull_command._do_command()
 
 
 class PullCommand(CommandBase):
@@ -186,8 +187,11 @@ class PullCommand(CommandBase):
             for pageid in response.keys():
                 pagename = response[pageid]['title']
                 
-                # XXX is the revisions list a sorted one, should I use [0] or [-1]?
-                last_wiki_rev_comment = response[pageid]['revisions'][0]['comment']
+                # Is the revisions list a sorted one, should I use [0] or [-1]? -- reagle
+                if 'comment' in response[pageid]['revisions'][0]:
+                    last_wiki_rev_comment = response[pageid]['revisions'][0]['comment']
+                else:
+                    last_wiki_rev_comment = ''
                 last_wiki_rev_user = response[pageid]['revisions'][0]['user']
                 
                 # check if working file is modified or if wiki page doesn't exists
@@ -196,10 +200,10 @@ class PullCommand(CommandBase):
                 full_filename = os.path.join(self.metadir.root, filename + '.wiki')
                 if filename + '.wiki' in status and \
                     status[filename + '.wiki' ] in ['M']:
-                    print 'skipping:       %s -- uncommitted modifications ' % (pagename)
+                    print 'skipping:       "%s" -- uncommitted modifications ' % (pagename)
                     continue
                 if 'missing' in response[pageid].keys():
-                    print '%s: %s: page does not exist, file not created' % \
+                    print 'error:          "%s": -- page does not exist, file not created' % \
                             (self.me, pagename)
                     continue
 
@@ -209,9 +213,9 @@ class PullCommand(CommandBase):
                 last_working_revid = working_revids[-1]
                 if ( os.path.exists(full_filename) and 
                         last_wiki_revid == last_working_revid):
-                    print 'wiki unchanged: %s' % (pagename)
+                    print 'wiki unchanged: "%s"' % (pagename)
                 else:
-                    print 'pulling:        %s : %s -- %s' % (
+                    print 'pulling:        "%s" : "%s" by "%s"' % (
                         pagename, last_wiki_rev_comment, last_wiki_rev_user)
                     self.metadir.pagedict_add(pagename, pageid, last_wiki_revid)
                     self.metadir.pages_add_rv(int(pageid),
@@ -220,8 +224,7 @@ class PullCommand(CommandBase):
                         data = response[pageid]['revisions'][0]['*']
                         data = data.encode('utf-8')
                         fd.write(data)
-
-
+                        
 class StatusCommand(CommandBase):
 
     def __init__(self):
@@ -247,6 +250,39 @@ class DiffCommand(CommandBase):
             if status[filename] == 'M':
                 print self.metadir.diff_rv_to_working(
                         mw.metadir.filename_to_pagename(filename[:-5])),
+
+
+class MergeCommand(CommandBase):
+    def __init__(self):
+        CommandBase.__init__(self, 'merge', 'merge local and wiki copies')
+        self.merge_tool = self.metadir.config.get('merge', 'tool')
+
+    def _do_command(self):
+        self._die_if_no_init()
+        status = self.metadir.working_dir_status()
+        for filename in status:
+            if status[filename] == 'M':
+                full_filename = os.path.join(self.metadir.root, filename)
+                pagename = mw.metadir.filename_to_pagename(filename[:-5])
+                # mv local to filename.wiki.local
+                os.rename(full_filename, full_filename + '.local')
+                # pull wiki copy
+                pull_command = PullCommand()
+                pull_command.args = [pagename.encode('utf-8')]
+                pull_command._do_command()
+                # mv remote to filename.wiki.remote
+                os.rename(full_filename, full_filename + '.remote')
+                # Open merge tool
+                subprocess.call([self.merge_tool, full_filename + '.local', 
+                    full_filename + '.remote', '-o', full_filename + '.merge'])
+                # mv filename.merge filename and delete tmp files
+                os.rename(full_filename + '.merge', full_filename)
+                os.remove(full_filename + '.local')
+                os.remove(full_filename + '.remote')
+                # mw ci pagename
+                commit_command = CommitCommand()
+                commit_command.args = [pagename.encode('utf-8')]
+                commit_command._do_command()
 
 
 class CommitCommand(CommandBase):
@@ -296,8 +332,8 @@ class CommitCommand(CommandBase):
                 awaitedrevid = \
                         self.metadir.pages_get_rv_list({'id': pageid})[0]
                 if revid != awaitedrevid:
-                    print 'warning: edit conflict detected on %s (%s -> %s) ' \
-                            '-- skipping!' % (file, awaitedrevid, revid)
+                    print 'warning: edit conflict detected on "%s" (%s -> %s) ' \
+                            '-- skipping! (try merge)' % (filename, awaitedrevid, revid)
                     continue
                 edittoken = pages[pageid]['edittoken']
                 full_filename = os.path.join(self.metadir.root, filename)
