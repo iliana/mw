@@ -273,8 +273,9 @@ class MergeCommand(CommandBase):
                 # mv remote to filename.wiki.remote
                 os.rename(full_filename, full_filename + '.remote')
                 # Open merge tool
-                subprocess.call([self.merge_tool, full_filename + '.local', 
-                    full_filename + '.remote', '-o', full_filename + '.merge'])
+                merge_command = self.merge_tool % (full_filename + '.local', 
+                    full_filename + '.remote', full_filename + '.merge')
+                subprocess.call(merge_command.split(' '))
                 # mv filename.merge filename and delete tmp files
                 os.rename(full_filename + '.merge', full_filename)
                 os.remove(full_filename + '.local')
@@ -302,13 +303,13 @@ class CommitCommand(CommandBase):
     def _do_command(self):
         self._die_if_no_init()
         self._api_setup()
+        files_to_commit = 0 # how many files to process
         status = self.metadir.working_dir_status(files=self.args)
-        nothing_to_commit = True
         for filename in status:
             print '%s %s' % (status[filename], filename)
             if status[filename] in ['M']:
-                nothing_to_commit = False
-        if nothing_to_commit:
+                files_to_commit += 1
+        if not files_to_commit:
             print 'nothing to commit'
             sys.exit()
         if self.options.edit_summary == None:
@@ -316,8 +317,9 @@ class CommitCommand(CommandBase):
             edit_summary = raw_input()
         else:
             edit_summary = self.options.edit_summary
-        for file_num, filename in enumerate(status):
+        for filename in status:
             if status[filename] in ['M']:
+                files_to_commit -= 1
                 # get edit token
                 data = {
                         'action': 'query',
@@ -383,12 +385,12 @@ class CommitCommand(CommandBase):
                     self.metadir.pages_add_rv(int(pageid),
                                               response[pageid]['revisions'][0])
                     # need to write latest rev to file too, as text may be changed
-                    # such as a sig, e.g., -~ =>  -[[User:Reagle|Reagle]]
+                    #such as a sig, e.g., -~ =>  -[[User:Reagle|Reagle]]
                     with file(full_filename, 'w') as fd:
                         data = response[pageid]['revisions'][0]['*']
                         data = data.encode('utf-8')
                         fd.write(data)
-                    if file_num != len(status) - 1:
+                    if files_to_commit :
                         print 'waiting 3s before processing the next file'
                         time.sleep(3)
                 else:
