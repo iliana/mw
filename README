@@ -25,6 +25,7 @@ usage: mw [subcommand]
         init           start a mw repo          
         login          authenticate with wiki   
         logout         forget authentication    
+        merge          run merge tool on conflicting locate/remove diffs
         pull           add remote pages to repo 
         pullcat        add remote pages to repo belonging to the given category
         status (st)    check repo status     
