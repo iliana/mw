@@ -254,11 +254,12 @@ class DiffCommand(CommandBase):
 
 class MergeCommand(CommandBase):
     def __init__(self):
-        CommandBase.__init__(self, 'merge', 'merge local and wiki copies')
-        self.merge_tool = self.metadir.config.get('merge', 'tool')
+        usage = '[FILES]'
+        CommandBase.__init__(self, 'merge', 'merge local and wiki copies', usage)
 
     def _do_command(self):
         self._die_if_no_init()
+        self.merge_tool = self.metadir.config.get('merge', 'tool')
         status = self.metadir.working_dir_status()
         for filename in status:
             if status[filename] == 'M':
