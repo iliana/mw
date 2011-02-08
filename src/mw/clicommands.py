@@ -187,6 +187,11 @@ class PullCommand(CommandBase):
             for pageid in response.keys():
                 pagename = response[pageid]['title']
                 
+                # If no revisions, then error, perhaps page deleted
+                if 'revisions' not in response[pageid]:
+                    print 'skipping:       "%s" -- cannot find page, perhaps deleted' % (pagename)
+                    continue
+                
                 # Is the revisions list a sorted one, should I use [0] or [-1]? -- reagle
                 if 'comment' in response[pageid]['revisions'][0]:
                     last_wiki_rev_comment = response[pageid]['revisions'][0]['comment']
