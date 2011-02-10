@@ -67,6 +67,8 @@ class Metadir(object):
         self.config = ConfigParser.RawConfigParser()
         self.config.add_section('remote')
         self.config.set('remote', 'api_url', api_url)
+        self.config.add_section('merge')
+        self.config.set('merge', 'tool', 'kidff3 %s %s -o %s')
         self.save_config()
         # create cache/
         os.mkdir(os.path.join(self.location, 'cache'))
