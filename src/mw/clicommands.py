@@ -175,7 +175,8 @@ class PullCommand(CommandBase):
                 converted_pages.append(pagename)
         pages = converted_pages
 
-        for these_pages in [pages[i:i + 25] for i in range(0, len(pages), 25)]: # XXX ?
+        for these_pages in [pages[i:i + 25] for i in 
+                range(0, len(pages), 25)]: # what does this '25' do? - reagle
             data = {
                     'action': 'query',
                     'titles': '|'.join(these_pages),
@@ -187,12 +188,11 @@ class PullCommand(CommandBase):
             for pageid in response.keys():
                 pagename = response[pageid]['title']
                 
-                # If no revisions, then error, perhaps page deleted
                 if 'revisions' not in response[pageid]:
                     print 'skipping:       "%s" -- cannot find page, perhaps deleted' % (pagename)
                     continue
                 
-                # Is the revisions list a sorted one, should I use [0] or [-1]? -- reagle
+                # Is the revisions list a sorted one, should I use [0] or [-1]? - reagle
                 if 'comment' in response[pageid]['revisions'][0]:
                     last_wiki_rev_comment = response[pageid]['revisions'][0]['comment']
                 else:
@@ -218,7 +218,8 @@ class PullCommand(CommandBase):
                 last_working_revid = working_revids[-1]
                 if ( os.path.exists(full_filename) and 
                         last_wiki_revid == last_working_revid):
-                    print 'wiki unchanged: "%s"' % (pagename)
+                    #print 'wiki unchanged: "%s"' % (pagename)
+                    pass
                 else:
                     print 'pulling:        "%s" : "%s" by "%s"' % (
                         pagename, last_wiki_rev_comment, last_wiki_rev_user)
@@ -235,12 +236,19 @@ class StatusCommand(CommandBase):
     def __init__(self):
         CommandBase.__init__(self, 'status', 'check repo status')
         self.shortcuts.append('st')
+        self.parser.add_option('-A', '--all', dest='show_all', action='store_true',
+                                default = False,
+                                help="show all files' status")
 
     def _do_command(self):
         self._die_if_no_init()
         status = self.metadir.working_dir_status()
         for filename in status:
-            print '%s %s' % (status[filename], filename)
+
+            if not self.options.show_all and status[filename] == 'C':
+                continue
+            else:
+                print '%s %s' % (status[filename], filename)
 
 
 class DiffCommand(CommandBase):
