@@ -320,8 +320,8 @@ class CommitCommand(CommandBase):
         files_to_commit = 0 # how many files to process
         status = self.metadir.working_dir_status(files=self.args)
         for filename in status:
-            print '%s %s' % (status[filename], filename)
             if status[filename] in ['M']:
+                print '%s %s' % (status[filename], filename)
                 files_to_commit += 1
         if not files_to_commit:
             print 'nothing to commit'
