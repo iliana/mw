@@ -35,6 +35,9 @@ usage: mw [subcommand]
         pullcat        add remote pages to repo belonging to the given category
         status (st)    check repo status     
 
+For a brief tutorial, see:
+  http://reagle.org/joseph/2011/01/mw-tutorial
+
 === Status command ===
 
 `status` Will show whether a file has been locally modified ('M') or is clean ('C').
