@@ -77,12 +77,15 @@ class CommandBase(object):
         if self.metadir.config is None:
             print '%s: not a mw repo' % self.me
             sys.exit(1)
+        self.api_setup = False
 
     def _api_setup(self):
-        cookie_filename = os.path.join(self.metadir.location, 'cookies')
-        self.api_url = self.metadir.config.get('remote', 'api_url')
-        self.api = simplemediawiki.MediaWiki(self.api_url,
+        if not self.api_setup: # do not call _api_setup twice
+            cookie_filename = os.path.join(self.metadir.location, 'cookies')
+            self.api_url = self.metadir.config.get('remote', 'api_url')
+            self.api = simplemediawiki.MediaWiki(self.api_url,
                                              cookie_file=cookie_filename)
+            self.api_setup = True
 
 
 class InitCommand(CommandBase):
