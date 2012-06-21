@@ -47,6 +47,15 @@ class Metadir(object):
             self.config.read(self.config_loc)
         else:
             self.config = None
+        self.pagedict_loaded = False
+
+    def pagedict_load(self):
+        if not self.pagedict_loaded:
+            print "loading pagedict"
+            fd = file(os.path.join(self.location, 'cache', 'pagedict'), 'r+')
+            self.pagedict = json.loads(fd.read())
+            fd.close
+            self.pagedict_loaded = True
 
     def save_config(self):
         with open(self.config_loc, 'wb') as config_file:
@@ -89,20 +98,18 @@ class Metadir(object):
         fd.close()
 
     def pagedict_add(self, pagename, pageid, currentrv):
-        fd = file(os.path.join(self.location, 'cache', 'pagedict'), 'r+')
-        pagedict = json.loads(fd.read())
-        pagedict[pagename] = {'id': int(pageid), 'currentrv': int(currentrv)}
-        fd.seek(0)
-        fd.write(json.dumps(pagedict))
+        self.pagedict_load()
+        self.pagedict[pagename] = {'id': int(pageid), 'currentrv': int(currentrv)}
+        fd = file(os.path.join(self.location, 'cache', 'pagedict'), 'w')
+        fd.write(json.dumps(self.pagedict))
         fd.truncate()
         fd.close()
 
     def get_pageid_from_pagename(self, pagename):
-        fd = file(os.path.join(self.location, 'cache', 'pagedict'), 'r')
-        pagedict = json.loads(fd.read())
+        self.pagedict_load()
         pagename = pagename.decode('utf-8')
-        if pagename in pagedict.keys():
-            return pagedict[pagename]
+        if pagename in self.pagedict.keys():
+            return self.pagedict[pagename]
         else:
             return None
 
