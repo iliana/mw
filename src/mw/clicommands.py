@@ -132,6 +132,7 @@ class PullCategoryMembersCommand(CommandBase):
         usage = '[options] PAGENAME ...'
         CommandBase.__init__(self, 'pull_commandat', 'add remote pages to repo '
                              'belonging to the given category', usage)
+        self.query_continue = ''
 
     def _do_command(self):
         self._die_if_no_init()
@@ -145,13 +146,28 @@ class PullCategoryMembersCommand(CommandBase):
                 'generator': 'categorymembers',
                 'gcmlimit': 500
             }
-        response = self.api.call(data)['query']['pages']
+        if self.query_continue != '':
+           data['gcmcontinue'] = self.query_continue
+
+        api_call = self.api.call(data)
+        if 'query-continue' in api_call:
+            self.query_continue = api_call['query-continue']['categorymembers']['gcmcontinue']
+        else:
+            self.query_continue = ''
+        response = api_call['query']['pages']
+        pull_command = PullCommand()
+        pull_command.args = []
+
         for pageid in response.keys():
             pagename = response[pageid]['title']
-            print pagename
-            pull_command = PullCommand()
-            pull_command.args = [pagename.encode('utf-8')]
-            pull_command._do_command()
+            pull_command.args += [pagename.encode('utf-8')]
+
+        pull_command._do_command()
+
+        if self.query_continue != '':
+            print 'query continue detected - continuing the query'
+            self._do_command()
+
 
 
 class PullCommand(CommandBase):
