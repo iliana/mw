@@ -51,7 +51,6 @@ class Metadir(object):
 
     def pagedict_load(self):
         if not self.pagedict_loaded:
-            print "loading pagedict"
             fd = file(os.path.join(self.location, 'cache', 'pagedict'), 'r+')
             self.pagedict = json.loads(fd.read())
             fd.close
