@@ -175,8 +175,9 @@ class PullCommand(CommandBase):
                 converted_pages.append(pagename)
         pages = converted_pages
 
+        # process the files in groups of 25 to be kind to service
         for these_pages in [pages[i:i + 25] for i in 
-                range(0, len(pages), 25)]: # what does this '25' do? - reagle
+                range(0, len(pages), 25)]: 
             data = {
                     'action': 'query',
                     'titles': '|'.join(these_pages),
@@ -192,7 +193,7 @@ class PullCommand(CommandBase):
                     print 'skipping:       "%s" -- cannot find page, perhaps deleted' % (pagename)
                     continue
                 
-                # Is the revisions list a sorted one, should I use [0] or [-1]? - reagle
+                # ['revisions'][0] is the latest revid
                 if 'comment' in response[pageid]['revisions'][0]:
                     last_wiki_rev_comment = response[pageid]['revisions'][0]['comment']
                 else:
