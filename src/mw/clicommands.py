@@ -301,7 +301,7 @@ class MergeCommand(CommandBase):
                 os.rename(full_filename, full_filename + '.local')
                 # pull wiki copy
                 pull_command = PullCommand()
-                pull_command.args = [pagename.encode('utf-8')]
+                pull_command.args = [pagename]#.encode('utf-8')] #assuming the file is already using utf-8 - esby
                 pull_command._do_command()
                 # mv remote to filename.wiki.remote
                 os.rename(full_filename, full_filename + '.remote')
@@ -315,7 +315,7 @@ class MergeCommand(CommandBase):
                 os.remove(full_filename + '.remote')
                 # mw ci pagename
                 commit_command = CommitCommand()
-                commit_command.args = [pagename.encode('utf-8')]
+                commit_command.args = [pagename]#.encode('utf-8')] #assuming the file is already using utf-8 - esby
                 commit_command._do_command()
 
 
@@ -352,6 +352,7 @@ class CommitCommand(CommandBase):
             edit_summary = self.options.edit_summary
         for filename in status:
             if status[filename] in ['M']:
+                start_time = time.time()
                 files_to_commit -= 1
                 # get edit token
                 data = {
@@ -424,8 +425,13 @@ class CommitCommand(CommandBase):
                         data = data.encode('utf-8')
                         fd.write(data)
                     if files_to_commit :
-                        print 'waiting 3s before processing the next file'
-                        time.sleep(3)
+                        end_time = time.time()
+                        print time.strftime("%Y-%m-%d - %H:%M:%S", time.gmtime(time.time()))
+                        time_inc = end_time - start_time
+                        delay = 10 - time_inc
+                        if delay > 0 :
+                            print "adjusting throttle - waiting for %.2fs" % delay
+                            time.sleep(delay)
                 else:
                     print 'error: committing %s failed: %s' % \
                             (filename, response['edit']['result'])
