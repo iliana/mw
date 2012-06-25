@@ -25,16 +25,6 @@ from StringIO import StringIO
 import sys
 import hashlib
 
-# function taken from http://code.activestate.com/recipes/466341-guaranteed-conversion-to-unicode-or-byte-string/
-# used to handle some weird case with accentued characters in filename 
-# eg: http://commons.wikimedia.org/wiki/File:Jean-Louis_Debr%C3%A9_14_mars_2009.jpg
-def safe_str(obj):
-    """ return the byte string representation of obj """
-    try:
-        return str(obj)
-    except UnicodeEncodeError:
-        # obj is unicode
-        return unicode(obj).encode('unicode_escape')
 
 class Metadir(object):
 
@@ -122,7 +112,7 @@ class Metadir(object):
 
     def get_md5_from_pagename(self, pagename):
         m = hashlib.md5()
-        name = safe_str(pagename)
+        name = pagename.encode('unicode_escape') 
         m.update(name)
         return os.path.join(self.location, 'cache', 'md5index', m.hexdigest())
 
