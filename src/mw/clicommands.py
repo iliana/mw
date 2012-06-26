@@ -426,12 +426,14 @@ class CommitCommand(CommandBase):
                         fd.write(data)
                     if files_to_commit :
                         end_time = time.time()
-                        print time.strftime("%Y-%m-%d - %H:%M:%S", time.gmtime(time.time()))
+                        print time.strftime("%Y-%m-%d - %H:%M:%S", time.gmtime(time.time())) \
+                            + " - Committed - " + mw.metadir.filename_to_pagename(filename[:-5]) \
+                            + " - Files left: " + str(files_to_commit)
                         time_inc = end_time - start_time
                         delay = 10 - time_inc
                         if delay > 0 :
                             print "adjusting throttle - waiting for %.2fs" % delay
-                            time.sleep(delay)
+                            time.sleep(delay) 
                 else:
                     print 'error: committing %s failed: %s' % \
                             (filename, response['edit']['result'])
