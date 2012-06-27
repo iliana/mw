@@ -78,7 +78,7 @@ class Metadir(object):
         self.config.add_section('merge')
         self.config.set('merge', 'tool', 'kidff3 %s %s -o %s')
         self.config.add_section('index')
-        self.config.set('index''use_md5','on')
+        self.config.set('index', 'use_md5','on')
         self.save_config()
         # create cache/
         os.mkdir(os.path.join(self.location, 'cache'))
