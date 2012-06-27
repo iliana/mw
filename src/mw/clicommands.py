@@ -154,19 +154,21 @@ class PullCategoryMembersCommand(CommandBase):
             self.query_continue = api_call['query-continue']['categorymembers']['gcmcontinue']
         else:
             self.query_continue = ''
-        response = api_call['query']['pages']
-        pull_command = PullCommand()
-        pull_command.args = []
+        if api_call != [] :
+ 
+            response = api_call['query']['pages']
+            pull_command = PullCommand()
+            pull_command.args = []
 
-        for pageid in response.keys():
-            pagename = response[pageid]['title']
-            pull_command.args += [pagename.encode('utf-8')]
+            for pageid in response.keys():
+                 pagename = response[pageid]['title']
+                 pull_command.args += [pagename.encode('utf-8')]
 
-        pull_command._do_command()
+            pull_command._do_command()
 
-        if self.query_continue != '':
-            print 'query continue detected - continuing the query'
-            self._do_command()
+            if self.query_continue != '':
+                 print 'query continue detected - continuing the query'
+                 self._do_command()
 
 
 
