@@ -23,6 +23,7 @@ import json
 import os
 from StringIO import StringIO
 import sys
+import hashlib
 
 
 class Metadir(object):
@@ -45,6 +46,13 @@ class Metadir(object):
            os.path.isfile(self.config_loc):
             self.config = ConfigParser.RawConfigParser()
             self.config.read(self.config_loc)
+            self.use_md5 = False
+            if self.config.has_option('index', 'use_md5'):
+                self.use_md5 = ( self.config.get('index', 'use_md5') == 'on' )
+                md5path = os.path.join(self.location, 'cache', 'md5index')
+                if self.use_md5 and not  os.path.exists(md5path):
+                    os.mkdir(md5path, 0755)
+            self.pagedict_loaded = False
         else:
             self.config = None
 
@@ -69,6 +77,8 @@ class Metadir(object):
         self.config.set('remote', 'api_url', api_url)
         self.config.add_section('merge')
         self.config.set('merge', 'tool', 'kidff3 %s %s -o %s')
+        self.config.add_section('index')
+        self.config.set('index', 'use_md5','on')
         self.save_config()
         # create cache/
         os.mkdir(os.path.join(self.location, 'cache'))
@@ -76,6 +86,11 @@ class Metadir(object):
         fd = file(os.path.join(self.location, 'cache', 'pagedict'), 'w')
         fd.write(json.dumps({}))
         fd.close()
+
+        # structure replacement for pagedict
+        # will also be created if use_md5 is turned on with an existing project
+        os.mkdir(os.path.join(self.location, 'cache', 'md5index'), 0755)
+
         # create cache/pages/
         os.mkdir(os.path.join(self.location, 'cache', 'pages'), 0755)
 
@@ -88,23 +103,53 @@ class Metadir(object):
         fd.write(cur_content.encode('utf-8'))
         fd.close()
 
+    def pagedict_load(self):
+        if not self.pagedict_loaded:
+            fd = file(os.path.join(self.location, 'cache', 'pagedict'), 'r+')
+            self.pagedict = json.loads(fd.read())
+            fd.close
+            self.pagedict_loaded = True
+
+    def get_md5_from_pagename(self, pagename):
+        m = hashlib.md5()
+        name = pagename.encode('unicode_escape') 
+        m.update(name)
+        return os.path.join(self.location, 'cache', 'md5index', m.hexdigest())
+
     def pagedict_add(self, pagename, pageid, currentrv):
-        fd = file(os.path.join(self.location, 'cache', 'pagedict'), 'r+')
-        pagedict = json.loads(fd.read())
-        pagedict[pagename] = {'id': int(pageid), 'currentrv': int(currentrv)}
-        fd.seek(0)
-        fd.write(json.dumps(pagedict))
-        fd.truncate()
-        fd.close()
+        if not self.use_md5:
+            self.pagedict_load()
+            self.pagedict[pagename] = {'id': int(pageid), 'currentrv': int(currentrv)}
+            fd = file(os.path.join(self.location, 'cache', 'pagedict'), 'w')
+            fd.write(json.dumps(self.pagedict))
+            fd.truncate()
+            fd.close()
+        else: # feeding the new index structure
+             md5pagename = self.get_md5_from_pagename(pagename)
+             page = {}
+             page[pagename] =  {'id': int(pageid), 'currentrv': int(currentrv)}
+             fd = file(md5pagename , 'w')
+             fd.write(json.dumps(page))
+             fd.truncate()
+             fd.close()
 
     def get_pageid_from_pagename(self, pagename):
-        fd = file(os.path.join(self.location, 'cache', 'pagedict'), 'r')
-        pagedict = json.loads(fd.read())
-        pagename = pagename.decode('utf-8')
-        if pagename in pagedict.keys():
-            return pagedict[pagename]
-        else:
-            return None
+        if not self.use_md5:
+             self.pagedict_load()
+             pagename = pagename.decode('utf-8')
+             if pagename in self.pagedict.keys():
+                 return self.pagedict[pagename]
+             else:
+                 return None
+        else: # feeding the new index structure
+             pagename = pagename.decode('utf-8')
+             md5pagename = self.get_md5_from_pagename(pagename)
+             if os.path.isfile(md5pagename):
+                 fd = file(md5pagename, 'r+')
+                 page = json.loads(fd.read())
+                 return page[pagename]
+             else:
+                 return None
 
     def pages_add_rv(self, pageid, rv):
         pagefile = os.path.join(self.location, 'cache', 'pages', str(pageid))
