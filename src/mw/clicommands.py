@@ -77,12 +77,15 @@ class CommandBase(object):
         if self.metadir.config is None:
             print '%s: not a mw repo' % self.me
             sys.exit(1)
+        self.api_setup = False
 
     def _api_setup(self):
-        cookie_filename = os.path.join(self.metadir.location, 'cookies')
-        self.api_url = self.metadir.config.get('remote', 'api_url')
-        self.api = simplemediawiki.MediaWiki(self.api_url,
+        if not self.api_setup: # do not call _api_setup twice
+            cookie_filename = os.path.join(self.metadir.location, 'cookies')
+            self.api_url = self.metadir.config.get('remote', 'api_url')
+            self.api = simplemediawiki.MediaWiki(self.api_url,
                                              cookie_file=cookie_filename)
+            self.api_setup = True
 
 
 class InitCommand(CommandBase):
@@ -129,6 +132,7 @@ class PullCategoryMembersCommand(CommandBase):
         usage = '[options] PAGENAME ...'
         CommandBase.__init__(self, 'pull_commandat', 'add remote pages to repo '
                              'belonging to the given category', usage)
+        self.query_continue = ''
 
     def _do_command(self):
         self._die_if_no_init()
@@ -142,13 +146,30 @@ class PullCategoryMembersCommand(CommandBase):
                 'generator': 'categorymembers',
                 'gcmlimit': 500
             }
-        response = self.api.call(data)['query']['pages']
-        for pageid in response.keys():
-            pagename = response[pageid]['title']
-            print pagename
+        if self.query_continue != '':
+           data['gcmcontinue'] = self.query_continue
+
+        api_call = self.api.call(data)
+        if 'query-continue' in api_call:
+            self.query_continue = api_call['query-continue']['categorymembers']['gcmcontinue']
+        else:
+            self.query_continue = ''
+        if api_call != [] :
+ 
+            response = api_call['query']['pages']
             pull_command = PullCommand()
-            pull_command.args = [pagename.encode('utf-8')]
+            pull_command.args = []
+
+            for pageid in response.keys():
+                 pagename = response[pageid]['title']
+                 pull_command.args += [pagename.encode('utf-8')]
+
             pull_command._do_command()
+
+            if self.query_continue != '':
+                 print 'query continue detected - continuing the query'
+                 self._do_command()
+
 
 
 class PullCommand(CommandBase):
@@ -283,7 +304,7 @@ class MergeCommand(CommandBase):
                 os.rename(full_filename, full_filename + '.local')
                 # pull wiki copy
                 pull_command = PullCommand()
-                pull_command.args = [pagename.encode('utf-8')]
+                pull_command.args = [pagename]#.encode('utf-8')] #assuming the file is already using utf-8 - esby
                 pull_command._do_command()
                 # mv remote to filename.wiki.remote
                 os.rename(full_filename, full_filename + '.remote')
@@ -297,7 +318,7 @@ class MergeCommand(CommandBase):
                 os.remove(full_filename + '.remote')
                 # mw ci pagename
                 commit_command = CommitCommand()
-                commit_command.args = [pagename.encode('utf-8')]
+                commit_command.args = [pagename]#.encode('utf-8')] #assuming the file is already using utf-8 - esby
                 commit_command._do_command()
 
 
@@ -334,6 +355,7 @@ class CommitCommand(CommandBase):
             edit_summary = self.options.edit_summary
         for filename in status:
             if status[filename] in ['M']:
+                start_time = time.time()
                 files_to_commit -= 1
                 # get edit token
                 data = {
@@ -406,8 +428,15 @@ class CommitCommand(CommandBase):
                         data = data.encode('utf-8')
                         fd.write(data)
                     if files_to_commit :
-                        print 'waiting 3s before processing the next file'
-                        time.sleep(3)
+                        end_time = time.time()
+                        print time.strftime("%Y-%m-%d - %H:%M:%S", time.gmtime(time.time())) \
+                            + " - Committed - " + mw.metadir.filename_to_pagename(filename[:-5]) \
+                            + " - Files left: " + str(files_to_commit)
+                        time_inc = end_time - start_time
+                        delay = 10 - time_inc
+                        if delay > 0 :
+                            print "adjusting throttle - waiting for %.2fs" % delay
+                            time.sleep(delay) 
                 else:
                     print 'error: committing %s failed: %s' % \
                             (filename, response['edit']['result'])
